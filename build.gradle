@@ -1,0 +1,73 @@
+plugins {
+    id 'java-gradle-plugin'
+    id "com.gradle.plugin-publish" version "0.19.0"
+}
+
+apply from: 'publish.gradle'
+apply from: 'jacoco.gradle'
+
+sourceCompatibility = JavaVersion.VERSION_11
+
+def gitVersion = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags', '--always', '--dirty'
+        standardOutput = stdout
+    }
+    def version = stdout.toString().trim()
+    return version.contains('-') ? version + '-SNAPSHOT' : version
+}
+
+repositories {
+    mavenCentral()
+}
+
+allprojects {
+    group 'org.dmfs'
+    version gitVersion() // until we can use this plugin
+    repositories {
+        mavenCentral()
+    }
+}
+
+dependencies {
+    implementation "org.dmfs:semver:0.0.7"
+    implementation "org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r"
+    implementation 'org.dmfs:srcless-annotations:0.0.5'
+    implementation "org.dmfs:jems2:2.8.0"
+    annotationProcessor 'org.dmfs:srcless-processors:0.0.5'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
+    testImplementation "org.dmfs:jems2-testing:2.8.0"
+    testImplementation "org.hamcrest:hamcrest:2.2"
+    testAnnotationProcessor 'org.dmfs:srcless-processors:0.0.5'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+gradlePlugin {
+    plugins {
+        gitVersionPlugin {
+            id = 'org.dmfs.gitversion'
+            implementationClass = 'org.dmfs.gradle.gitversion.GitVersionPlugin'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/dmfs/gitversion'
+    vcsUrl = 'https://github.com/dmfs/gitversion'
+
+    plugins {
+        gitVersionPlugin {
+            // id is captured from java-gradle-plugin configuration
+            displayName = 'GitVersion plugin'
+            description = 'Gradle versioning based on git history.'
+            tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
+        }
+    }
+}
