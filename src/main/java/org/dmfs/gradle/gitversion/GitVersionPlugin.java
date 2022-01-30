@@ -5,6 +5,7 @@ import org.dmfs.gradle.gitversion.git.GitVersion;
 import org.dmfs.gradle.gitversion.git.changetypefacories.FirstOf;
 import org.dmfs.gradle.gitversion.tasks.TagReleaseTask;
 import org.dmfs.gradle.gitversion.tasks.TagTask;
+import org.dmfs.gradle.gitversion.tasks.VersionTask;
 import org.dmfs.gradle.gitversion.utils.ProjectRepositoryFunction;
 import org.dmfs.jems2.Single;
 import org.dmfs.jems2.single.Frozen;
@@ -58,6 +59,7 @@ public final class GitVersionPlugin implements Plugin<Project>
 
         project.getTasks().register("gitTag", TagTask.class);
         project.getTasks().register("gitTagRelease", TagReleaseTask.class);
+        project.getTasks().register("gitVersion", VersionTask.class);
 
         project.subprojects(subproject -> subproject.setVersion(project.getVersion()));
     }
