@@ -8,6 +8,7 @@ import org.dmfs.jems2.iterable.Sorted;
 import org.dmfs.jems2.optional.First;
 import org.dmfs.jems2.optional.FirstPresent;
 import org.dmfs.jems2.optional.MapEntry;
+import org.dmfs.jems2.optional.NullSafe;
 import org.dmfs.jems2.single.Backed;
 import org.dmfs.semver.*;
 import org.dmfs.semver.comparators.VersionComparator;
@@ -15,6 +16,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefDatabase;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -75,6 +77,7 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
     {
         VersionParser parser = new StrictParser();
         Map<ObjectId, Version> result = new HashMap<>();
+        RefDatabase refDatabase = repository.getRefDatabase();
 
         for (Ref tag : new Git(repository).tagList().call())
         {
@@ -82,9 +85,12 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
             {
                 String tagName = tag.getName().startsWith(R_TAGS) ? tag.getName().substring(R_TAGS.length()) : tag.getName();
                 Version version = parser.parse(tagName);
-                if (!result.containsKey(tag.getObjectId()) || new VersionComparator().compare(result.get(tag.getObjectId()), version) < 0)
+
+                Ref peeled = refDatabase.peel(tag);
+                ObjectId objectId = new Backed<>(new NullSafe<>(peeled.getPeeledObjectId()), peeled.getObjectId()).value();
+                if (!result.containsKey(objectId) || new VersionComparator().compare(result.get(objectId), version) < 0)
                 {
-                    result.put(tag.getObjectId(), version);
+                    result.put(objectId, version);
                 }
             }
             catch (Exception e)

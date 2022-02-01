@@ -90,3 +90,9 @@ pluginBundle {
         }
     }
 }
+
+task "version" {
+    doLast {
+        print version
+    }
+}
