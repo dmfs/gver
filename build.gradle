@@ -1,7 +1,7 @@
 plugins {
     id 'java-gradle-plugin'
     id "com.gradle.plugin-publish" version "0.19.0"
-    id "org.dmfs.gitversion" version "0.1.0"
+    id "org.dmfs.gitversion" version "0.2.2"
     id 'maven-publish' // required to generate correct meta data
 }
 
@@ -88,11 +88,5 @@ pluginBundle {
             description = 'Gradle versioning based on git history.'
             tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
         }
-    }
-}
-
-task "version" {
-    doLast {
-        print version
     }
 }
