@@ -1,4 +1,7 @@
 # gitversion
+[![Build Status](https://travis-ci.com/dmfs/gitversion.svg?branch=main)](https://travis-ci.com/dmfs/gitversion)
+[![codecov](https://codecov.io/gh/dmfs/gitversion/branch/main/graph/badge.svg?token=Nkc6f2B7rO)](https://codecov.io/gh/dmfs/gitversion)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/dmfs/gitversion.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/dmfs/gitversion/context:java)
 
 Gradle versioning based on your Git history.
 
