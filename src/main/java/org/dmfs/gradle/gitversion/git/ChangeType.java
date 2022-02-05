@@ -1,23 +1,21 @@
 package org.dmfs.gradle.gitversion.git;
 
 import org.dmfs.gradle.gitversion.git.changetypefacories.Condition;
-import org.dmfs.jems2.Optional;
-import org.dmfs.jems2.single.Backed;
+import org.dmfs.jems2.Function;
 import org.dmfs.semver.*;
 
 
-public enum ChangeType implements VersionFactory
+public enum ChangeType implements Function<Version, Version>
 {
-    UNKNOWN((version, p, s) -> new NextPreRelease(version, new Backed<>(p, "alpha").value(), s)),
-    PRERELEASE((version, p, s) -> new NextPreRelease(version, new Backed<>(p, "alpha").value(), s)),
-    PATCH((version, p, s) -> new PatchPreRelease(version, new Backed<>(p, "alpha").value(), s)),
-    MINOR((version, p, s) -> new MinorPreRelease(version, new Backed<>(p, "alpha").value(), s)),
-    MAJOR((version, p, s) -> new MajorPreRelease(version, new Backed<>(p, "alpha").value(), s));
+    UNKNOWN(NextPreRelease::new),
+    PATCH(PatchPreRelease::new),
+    MINOR(MinorPreRelease::new),
+    MAJOR(MajorPreRelease::new);
 
-    private final VersionFactory mVersionFactory;
+    private final Function<? super Version, ? extends Version> mVersionFactory;
 
 
-    ChangeType(VersionFactory versionFactory)
+    ChangeType(Function<? super Version, ? extends Version> versionFactory)
     {
         mVersionFactory = versionFactory;
     }
@@ -30,9 +28,9 @@ public enum ChangeType implements VersionFactory
 
 
     @Override
-    public Version next(Version old, Optional<String> preRelease, String buildMeta)
+    public Version value(Version old)
     {
-        return mVersionFactory.next(old, preRelease, buildMeta);
+        return mVersionFactory.value(old);
     }
 
 }

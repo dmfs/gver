@@ -39,7 +39,7 @@ class GitVersionTest
     @ParameterizedTest
     @ValueSource(strings = {
         "0.0.1-alpha", "0.0.1-alpha.1", "0.0.1-alpha.2", "0.0.1", "0.0.2-alpha", "0.0.2-alpha.1", "0.1.0-alpha",
-        "0.1.0-alpha.2", "0.1.0-alpha.3", "0.1.0-alpha.4", "0.1.0", "0.2.0-alpha.feature", "0.2.0-alpha.1.feature",
+        "0.1.0-alpha.2b", "0.1.0-alpha.3b", "0.1.0-alpha.4b", "0.1.0", "0.2.0-alpha.feature", "0.2.0-alpha.1.feature",
         "0.2.0-alpha.2.feature", "0.1.1-alpha.feature", "0.1.1-annotated", "0.2.0-alpha.3.merge", "0.2.0" })
     void testMainNew(String bundle)
     {
@@ -52,7 +52,7 @@ class GitVersionTest
                         having(
                             v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
                             equalTo(
-                                new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().strip()))
+                                new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().trim()))
                     ))));
     }
 
@@ -72,7 +72,7 @@ class GitVersionTest
                         having(
                             v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
                             equalTo(
-                                new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().strip()))
+                                new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().trim()))
                     ))));
     }
 }

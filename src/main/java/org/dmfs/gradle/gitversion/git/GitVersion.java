@@ -53,8 +53,7 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
                 new MapEntry<>(tags, commit.getId()),
                 new First<>(
                     new Sorted<>(new Reverse<>(new VersionComparator()),
-                        new Mapped<>(v -> mStrategy.changeType(commit, "<FIXME>")
-                            .next(v, new NextPreRelease(v).preRelease(), commit.getId().getName().substring(0, 10)),
+                        new Mapped<>(v -> mStrategy.changeType(commit, "<FIXME>").value(v),
                             new Mapped<>(commit1 -> readVersion(revWalk, commit1, tags), new Seq<>(parsed(revWalk, commit).getParents())))))),
             () -> new PatchPreRelease(new Release(0, 0, 0), "alpha")).value();
     }
