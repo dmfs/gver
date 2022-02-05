@@ -65,7 +65,7 @@ class TagTaskTest
                                 proc -> repo -> proc.process(project),
                                 processes(() -> repository,
                                     having(new Unchecked<Repository, Iterable<String>, Exception>(r -> new Mapped<>(Ref::getName, new Git(r).tagList().call())),
-                                        containsInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1+301788391f"))
+                                        containsInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1"))
                                 ))))));
     }
 }

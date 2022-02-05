@@ -1,7 +1,7 @@
 plugins {
     id 'java-gradle-plugin'
     id "com.gradle.plugin-publish" version "0.19.0"
-    id "org.dmfs.gitversion" version "0.2.2"
+    id "org.dmfs.gitversion" version "0.3.0"
     id 'maven-publish' // required to generate correct meta data
 }
 
@@ -50,7 +50,7 @@ allprojects {
 }
 
 dependencies {
-    implementation "org.dmfs:semver:0.0.8"
+    implementation "org.dmfs:semver:0.1.0"
     implementation "org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r"
     implementation 'org.dmfs:srcless-annotations:0.0.5'
     implementation "org.dmfs:jems2:2.8.0"
