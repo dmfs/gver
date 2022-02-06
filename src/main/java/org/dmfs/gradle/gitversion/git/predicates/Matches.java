@@ -1,7 +1,5 @@
 package org.dmfs.gradle.gitversion.git.predicates;
 
-import org.gradle.internal.impldep.com.google.common.base.Predicates;
-
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 

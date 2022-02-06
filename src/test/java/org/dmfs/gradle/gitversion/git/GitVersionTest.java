@@ -8,6 +8,7 @@ import org.dmfs.semver.VersionSequence;
 import org.gradle.internal.impldep.com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.rules.TemporaryFolder;
 
@@ -43,7 +44,7 @@ class GitVersionTest
         "0.2.0-alpha.2.feature", "0.1.1-alpha.feature", "0.1.1-annotated", "0.2.0-alpha.3.merge", "0.2.0" })
     void testMainNew(String bundle)
     {
-        assertThat(new GitVersion(mStrategy),
+        assertThat(new GitVersion(mStrategy, ignored -> "alpha"),
             withTempFolder(tempDir ->
                 withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
                     tempDir,
@@ -63,11 +64,29 @@ class GitVersionTest
         "0.2.0-alpha.3.merge" })
     void testFeature(String bundle)
     {
-        assertThat(new GitVersion(mStrategy),
+        assertThat(new GitVersion(mStrategy, ignored -> "alpha"),
             withTempFolder(tempDir ->
                 withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
                     tempDir,
                     "feature",
+                    repo -> associates(repo,
+                        having(
+                            v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
+                            equalTo(
+                                new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().trim()))
+                    ))));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({ "0.2.0-main-b,main", "0.2.0-main-b.1,main", "0.2.0-alpha-b.2,alpha" })
+    void testAlphaConfigFeature(String bundle, String branch)
+    {
+        assertThat(new GitVersion(mStrategy, b -> b + "-b"),
+            withTempFolder(tempDir ->
+                withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
+                    tempDir,
+                    branch,
                     repo -> associates(repo,
                         having(
                             v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),

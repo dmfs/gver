@@ -15,6 +15,8 @@ import org.gradle.api.NonNullApi;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+import java.util.Optional;
+
 
 /**
  * A plugin to provide automatic semantic versioning to Gradle projects.
@@ -33,12 +35,18 @@ public final class GitVersionPlugin implements Plugin<Project>
             {
                 private final Single<String> mVersion = new Frozen<>(
                     () -> {
-                        try (Repository r = ProjectRepositoryFunction.INSTANCE.value(project))
+                        try (Repository repo = ProjectRepositoryFunction.INSTANCE.value(project))
                         {
                             return new VersionSequence(
                                 new GitVersion(
-                                    new FirstOf(extension.mChangeTypeStrategy.mChangeTypeStrategies))
-                                    .value(r)).toString();
+                                    new FirstOf(extension.mChangeTypeStrategy.mChangeTypeStrategies),
+                                    branch -> extension.mPreReleaseStrategies.mBranchConfigs.stream()
+                                        .map(preReleaseStrategy -> preReleaseStrategy.apply(branch))
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get)
+                                        .findFirst()
+                                        .orElse("alpha"))
+                                    .value(repo)).toString();
 
                         }
                         catch (Exception e)

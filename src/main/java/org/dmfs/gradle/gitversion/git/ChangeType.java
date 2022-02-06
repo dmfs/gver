@@ -1,21 +1,21 @@
 package org.dmfs.gradle.gitversion.git;
 
 import org.dmfs.gradle.gitversion.git.changetypefacories.Condition;
-import org.dmfs.jems2.Function;
+import org.dmfs.jems2.BiFunction;
 import org.dmfs.semver.*;
 
 
-public enum ChangeType implements Function<Version, Version>
+public enum ChangeType implements BiFunction<Version, String, Version>
 {
     UNKNOWN(NextPreRelease::new),
     PATCH(PatchPreRelease::new),
     MINOR(MinorPreRelease::new),
     MAJOR(MajorPreRelease::new);
 
-    private final Function<? super Version, ? extends Version> mVersionFactory;
+    private final BiFunction<? super Version, String, ? extends Version> mVersionFactory;
 
 
-    ChangeType(Function<? super Version, ? extends Version> versionFactory)
+    ChangeType(BiFunction<? super Version, String, ? extends Version> versionFactory)
     {
         mVersionFactory = versionFactory;
     }
@@ -28,9 +28,8 @@ public enum ChangeType implements Function<Version, Version>
 
 
     @Override
-    public Version value(Version old)
+    public Version value(Version old, String preRelease)
     {
-        return mVersionFactory.value(old);
+        return mVersionFactory.value(old, preRelease);
     }
-
 }

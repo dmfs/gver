@@ -1,6 +1,7 @@
 package org.dmfs.gradle.gitversion.git;
 
 import org.dmfs.jems2.FragileFunction;
+import org.dmfs.jems2.Function;
 import org.dmfs.jems2.comparator.Reverse;
 import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.iterable.Seq;
@@ -31,31 +32,40 @@ import static org.eclipse.jgit.lib.Constants.R_TAGS;
 public final class GitVersion implements FragileFunction<Repository, Version, Exception>
 {
     private final ChangeTypeStrategy mStrategy;
+    private final Function<String, String> mPreReleaseStrategy;
 
 
-    public GitVersion(ChangeTypeStrategy strategy)
+    public GitVersion(ChangeTypeStrategy strategy, Function<String, String> preReleaseStrategy)
     {
         mStrategy = strategy;
+        mPreReleaseStrategy = preReleaseStrategy;
     }
 
 
     @Override
     public Version value(Repository repository) throws Exception
     {
-        return readVersion(new RevWalk(repository), repository.parseCommit(repository.resolve("HEAD")), versions(repository));
+        try (RevWalk revWalk = new RevWalk(repository))
+        {
+            return readVersion(
+                revWalk,
+                repository.parseCommit(repository.resolve("HEAD")),
+                versions(repository),
+                mPreReleaseStrategy.value(repository.getBranch()));
+        }
     }
 
 
-    private Version readVersion(RevWalk revWalk, RevCommit commit, Map<ObjectId, Version> tags)
+    private Version readVersion(RevWalk revWalk, RevCommit commit, Map<ObjectId, Version> tags, String preRelease)
     {
         return new Backed<>(
             new FirstPresent<>(
                 new MapEntry<>(tags, commit.getId()),
                 new First<>(
                     new Sorted<>(new Reverse<>(new VersionComparator()),
-                        new Mapped<>(v -> mStrategy.changeType(commit, "<FIXME>").value(v),
-                            new Mapped<>(commit1 -> readVersion(revWalk, commit1, tags), new Seq<>(parsed(revWalk, commit).getParents())))))),
-            () -> new PatchPreRelease(new Release(0, 0, 0), "alpha")).value();
+                        new Mapped<>(v -> mStrategy.changeType(commit, "<FIXME>").value(v, preRelease),
+                            new Mapped<>(commit1 -> readVersion(revWalk, commit1, tags, preRelease), new Seq<>(parsed(revWalk, commit).getParents())))))),
+            () -> new PatchPreRelease(new Release(0, 0, 0), preRelease)).value();
     }
 
 
@@ -72,7 +82,7 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
     }
 
 
-    private Map<ObjectId, Version> versions(Repository repository) throws GitAPIException
+    private Map<ObjectId, Version> versions(Repository repository) throws GitAPIException, IOException
     {
         VersionParser parser = new StrictParser();
         Map<ObjectId, Version> result = new HashMap<>();
@@ -92,7 +102,7 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
                     result.put(objectId, version);
                 }
             }
-            catch (Exception e)
+            catch (IllegalArgumentException e)
             {
                 // ignore non-version tags
             }
