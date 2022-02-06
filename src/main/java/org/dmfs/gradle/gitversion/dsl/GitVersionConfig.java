@@ -19,6 +19,9 @@ public class GitVersionConfig
 
     public Pattern mReleaseBranchPattern = Pattern.compile("(main|master)$");
 
+    public PreReleaseConfig mPreReleaseStrategies = new PreReleaseConfig();
+
+
     public void setGithubRepo(String githubRepo)
     {
         this.githubRepo = Optional.of(githubRepo);
@@ -61,5 +64,13 @@ public class GitVersionConfig
                 return false;
             }
         };
+    }
+
+
+    public void preReleases(Closure<?> closure)
+    {
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.setDelegate(mPreReleaseStrategies);
+        closure.call();
     }
 }
