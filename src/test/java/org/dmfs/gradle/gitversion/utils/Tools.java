@@ -15,6 +15,7 @@ import org.hamcrest.Matcher;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
 
 import static org.dmfs.gradle.gitversion.utils.Matchers.given;
 
@@ -53,9 +54,7 @@ public final class Tools
     {
         return given(() ->
             {
-                File createdFolder = File.createTempFile("testFolder", "");
-                createdFolder.delete();
-                createdFolder.mkdir();
+                File createdFolder = Files.createTempDirectory("testFolder").toFile();
                 return createdFolder;
             },
             delegateFunction,
