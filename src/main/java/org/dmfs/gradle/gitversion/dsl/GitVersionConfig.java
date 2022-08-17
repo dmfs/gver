@@ -1,13 +1,12 @@
 package org.dmfs.gradle.gitversion.dsl;
 
-import java.io.IOException;
-import java.net.URL;
+import org.dmfs.gradle.gitversion.dsl.issuetracker.GitHub;
+
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import groovy.json.JsonSlurper;
 import groovy.lang.Closure;
 
 
@@ -15,16 +14,26 @@ public class GitVersionConfig
 {
     public Strategy mChangeTypeStrategy = new Strategy();
 
-    public Optional<String> githubRepo = Optional.empty();
+    public Optional<IssueTracker> issueTracker = Optional.empty();
 
     public Pattern mReleaseBranchPattern = Pattern.compile("(main|master)$");
 
     public PreReleaseConfig mPreReleaseStrategies = new PreReleaseConfig();
 
 
-    public void setGithubRepo(String githubRepo)
+    public void setIssueTracker(IssueTracker issueTracker)
     {
-        this.githubRepo = Optional.of(githubRepo);
+        this.issueTracker = Optional.of(issueTracker);
+    }
+
+
+    public IssueTracker GitHub(Closure<?> closure)
+    {
+        IssueTracker issueTracker = new GitHub();
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.setDelegate(issueTracker);
+        closure.call();
+        return issueTracker;
     }
 
 
@@ -42,28 +51,9 @@ public class GitVersionConfig
     }
 
 
-    public Predicate<String> referencesGithubIssue(Closure<Boolean> matcher)
+    public Predicate<String> containsIssue(Closure<Boolean> matcher)
     {
-        return commit ->
-        {
-            Pattern p = Pattern.compile("#(\\d+)");
-            Matcher matcher1 = p.matcher(commit);
-            if (!matcher1.find())
-            {
-                return false;
-            }
-
-            try
-            {
-                return matcher.call(
-                    new JsonSlurper()
-                        .parse(new URL(String.format("https://api.github.com/repos/%s/issues/%s", githubRepo.get(), matcher1.group(1)))));
-            }
-            catch (IOException e)
-            {
-                return false;
-            }
-        };
+        return issueTracker.map(s -> s.containsIssue(matcher)).orElseThrow(() -> new NoSuchElementException("No issue tracker configured"));
     }
 
 
