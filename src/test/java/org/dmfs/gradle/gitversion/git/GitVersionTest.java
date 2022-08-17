@@ -30,6 +30,7 @@ class GitVersionTest
         MAJOR.when(new CommitMessage(new Contains("#major"))),
         MINOR.when(new CommitMessage(new Contains("#minor"))),
         PATCH.when(new CommitMessage(new Contains("#patch"))),
+        NONE.when(new CommitMessage(new Contains("#trivial"))),
         UNKNOWN.when(((commit, branches) -> true))
     );
 
@@ -41,7 +42,7 @@ class GitVersionTest
     @ValueSource(strings = {
         "0.0.1-alpha", "0.0.1-alpha.1", "0.0.1-alpha.2", "0.0.1", "0.0.2-alpha", "0.0.2-alpha.1", "0.1.0-alpha",
         "0.1.0-alpha.2b", "0.1.0-alpha.3b", "0.1.0-alpha.4b", "0.1.0", "0.2.0-alpha.feature", "0.2.0-alpha.1.feature",
-        "0.2.0-alpha.2.feature", "0.1.1-alpha.feature", "0.1.1-annotated", "0.2.0-alpha.3.merge", "0.2.0" })
+        "0.2.0-alpha.2.feature", "0.1.1-alpha.feature", "0.1.1-annotated", "0.2.0-alpha.3.merge", "0.2.0", "0.2.0-trivial-change" })
     void testMainNew(String bundle)
     {
         assertThat(new GitVersion(mStrategy, ignored -> "alpha"),

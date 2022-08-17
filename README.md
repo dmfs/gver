@@ -23,6 +23,10 @@ gitVersion {
         accessToken = ACCESS_TOKEN // should be stored in your global or local gradle properties
     }
     changes {
+        are none when {
+            // trivial changes don't get a new version number
+            commitMessage contains("(?i)#trivial\\b")
+        }
         are major when {
             commitMessage contains("(?i)#major\\b")
         }

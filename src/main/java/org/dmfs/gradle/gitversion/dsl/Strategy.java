@@ -17,7 +17,7 @@ public class Strategy
     public final static ChangeType major = MAJOR;
     public final static ChangeType minor = MINOR;
     public final static ChangeType patch = PATCH;
-
+    public final static ChangeType none = NONE;
 
     public ConditionConsumer are(ChangeType changeType)
     {
