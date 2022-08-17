@@ -8,6 +8,7 @@ import org.dmfs.semver.*;
 public enum ChangeType implements BiFunction<Version, String, Version>
 {
     UNKNOWN(NextPreRelease::new),
+    NONE((version, preRelease) -> version), // same version
     PATCH(PatchPreRelease::new),
     MINOR(MinorPreRelease::new),
     MAJOR(MajorPreRelease::new);
