@@ -20,7 +20,9 @@ considered to be a minor change when the commit message contains either the patt
 gitVersion {
     issueTracker GitHub {
         repo = "dmfs/jems" // the name of the GitHub repo that contains the issues for this project
-        accessToken = ACCESS_TOKEN // should be stored in your global or local gradle properties
+        if (project.hasProperty("GITHUB_API_TOKEN")) {
+            accessToken = GITHUB_API_TOKEN // should be stored in your global or local gradle properties
+        }
     }
     changes {
         are none when {
@@ -70,16 +72,19 @@ gitVersion {
 The plugin now supports GitHub authentication to circumvent the unauthorized API quota. To generate a token go to https://github.com/settings/tokens
 and create a token without additional scopes (leave all boxes blank).
 
-Store the token in your global `gradle.properties` under a name like `GITHUB_ACCESS_TOKEN` and add an entry like
+Store the token in your global `gradle.properties` under a name like `GITHUB_API_TOKEN` and add an entry like
 
 ```
     issueTracker GitHub {
         repo = "dmfs/jems"
-        accessToken = GITHUB_ACCESS_TOKEN // should be stored in your global or local gradle properties
+        if (project.hasProperty("GITHUB_API_TOKEN")) {
+            accessToken = GITHUB_API_TOKEN // should be stored in your global or local gradle properties
+        }
     }
 ```
 
-to your `gitVersion` configuration (remove any old `githubRepo` entry).
+to your `gitVersion` configuration (remove any old `githubRepo` entry). The `if`-clause ensures that users without that property still can build the 
+project.
 
 DON'T PUT THE FILE CONTAINING THE TOKEN UNDER VERSION CONTROL!
 

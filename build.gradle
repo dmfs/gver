@@ -1,7 +1,7 @@
 plugins {
     id 'java-gradle-plugin'
     id "com.gradle.plugin-publish" version "0.19.0"
-    id "org.dmfs.gitversion" version "0.5.0"
+    id "org.dmfs.gitversion" version "0.7.0"
     id 'maven-publish' // required to generate correct meta data
 }
 
@@ -10,7 +10,12 @@ apply from: 'jacoco.gradle'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 gitVersion {
-    githubRepo "dmfs/gitversion"
+    issueTracker GitHub {
+        repo = "dmfs/gitversion"
+        if (project.hasProperty("GITHUB_API_TOKEN")) {
+            accessToken = GITHUB_API_TOKEN
+        }
+    }
     changes {
         are major when {
             commitMessage contains("(?i)#major\\b")
@@ -19,10 +24,10 @@ gitVersion {
             commitMessage contains("(?i)#break\\b")
         }
         are minor when {
-            commitMessage referencesGithubIssue { issue -> issue.labels?.every { it.name != "bug" } }
+            commitMessage containsIssue { issue -> issue.labels?.every { it.name != "bug" } }
         }
         are patch when {
-            commitMessage referencesGithubIssue { issue -> issue.labels?.any { it.name == "bug" } }
+            commitMessage containsIssue { issue -> issue.labels?.any { it.name == "bug" } }
         }
         are minor when {
             commitMessage contains("#feature\\b")
@@ -50,18 +55,18 @@ allprojects {
 
 dependencies {
     implementation "org.dmfs:semver:0.1.0"
-    implementation "org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r"
-    implementation 'org.dmfs:srcless-annotations:0.0.5'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
+    implementation 'org.dmfs:srcless-annotations:0.1.0'
     implementation "org.dmfs:jems2:2.8.0"
-    annotationProcessor 'org.dmfs:srcless-processors:0.0.5'
+    annotationProcessor 'org.dmfs:srcless-processors:0.1.0'
 
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
     testImplementation "org.dmfs:jems2-testing:2.8.0"
     testImplementation "org.hamcrest:hamcrest:2.2"
     testImplementation "org.saynotobugs:confidence-core:0.1.0"
-    testAnnotationProcessor 'org.dmfs:srcless-processors:0.0.5'
+    testAnnotationProcessor 'org.dmfs:srcless-processors:0.1.0'
 }
 
 test {
