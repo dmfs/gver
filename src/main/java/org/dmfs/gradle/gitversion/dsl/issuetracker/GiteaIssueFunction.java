@@ -6,19 +6,18 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import java.util.function.Consumer;
 
 
-final class GitHubIssueFunction implements FragileFunction<Integer, String, Exception>
+final class GiteaIssueFunction implements FragileFunction<Integer, String, Exception>
 {
-    private final String mRepoName;
+    private final String mBaseUrl;
     private final Consumer<HttpURLConnection> mAuthenticator;
 
 
-    GitHubIssueFunction(String repoName, Consumer<HttpURLConnection> authenticator)
+    GiteaIssueFunction(String baseUrl, Consumer<HttpURLConnection> authenticator)
     {
-        mRepoName = repoName;
+        mBaseUrl = baseUrl;
         mAuthenticator = authenticator;
     }
 
@@ -26,12 +25,7 @@ final class GitHubIssueFunction implements FragileFunction<Integer, String, Exce
     @Override
     public String value(Integer issueNumber) throws Exception
     {
-        if (!mRepoName.matches("^[\\w\\d-]+/[\\w\\d_.-]+$"))
-        {
-            throw new IllegalArgumentException("Illegal repo name " + mRepoName);
-        }
-        HttpURLConnection connection = (HttpURLConnection) new URL(
-            String.format(Locale.ENGLISH, "https://api.github.com/repos/%s/issues/%s", mRepoName, issueNumber)).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URL(mBaseUrl + "/" + issueNumber).openConnection();
         mAuthenticator.accept(connection);
         try (InputStream inputStream = connection.getInputStream();
              Reader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));

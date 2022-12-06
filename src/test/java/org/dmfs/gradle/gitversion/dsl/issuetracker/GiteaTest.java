@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 
-class GitHubTest
+class GiteaTest
 {
 
     @Test
@@ -26,14 +26,15 @@ class GitHubTest
     {
         FragileBiFunction<String, Optional<String>, FragileFunction<Integer, String, Exception>, Exception> mockIssueFunction =
             mock(FragileBiFunction.class,
-                with(f -> f.value(eq("x/y"), any()), returning(
+                with(f -> f.value(eq("https://foo.bar/api/v1/repos/x/y/issues"), any()), returning(
                     mock(FragileFunction.class,
                         with(f -> f.value(any()), throwing(new AssertionError("unexpected call"))),
                         with(f -> f.value(123), returning("{}")))
                 )));
 
-        assertThat(new GitHub(mockIssueFunction),
+        assertThat(new Gitea(mockIssueFunction),
             having(gh -> {
+                    gh.setHost("foo.bar");
                     gh.setRepo("x/y");
                     return gh;
                 },
@@ -59,14 +60,15 @@ class GitHubTest
     {
         FragileBiFunction<String, Optional<String>, FragileFunction<Integer, String, Exception>, Exception> mockIssueFunction =
             mock(FragileBiFunction.class,
-                with(f -> f.value(eq("x/y"), any()), returning(
+                with(f -> f.value(eq("https://foo.bar/api/v1/repos/x/y/issues"), any()), returning(
                     mock(FragileFunction.class,
                         with(f -> f.value(any()), throwing(new AssertionError("unexpected call"))),
                         with(f -> f.value(123), returning("{}")))
                 )));
 
-        assertThat(new GitHub(mockIssueFunction),
+        assertThat(new Gitea(mockIssueFunction),
             having(gh -> {
+                    gh.setHost("foo.bar");
                     gh.setRepo("x/y");
                     return gh;
                 },
@@ -92,14 +94,15 @@ class GitHubTest
     {
         FragileBiFunction<String, Optional<String>, FragileFunction<Integer, String, Exception>, Exception> mockIssueFunction =
             mock(FragileBiFunction.class,
-                with(f -> f.value(eq("x/y"), any()), returning(
+                with(f -> f.value(eq("https://foo.bar/api/v1/repos/x/y/issues"), any()), returning(
                     mock(FragileFunction.class,
                         with(f -> f.value(any()), throwing(new AssertionError("unexpected call"))),
                         with(f -> f.value(123), throwing(new IOException("Not Found"))))
                 )));
 
-        assertThat(new GitHub(mockIssueFunction),
+        assertThat(new Gitea(mockIssueFunction),
             having(gh -> {
+                    gh.setHost("foo.bar");
                     gh.setRepo("x/y");
                     return gh;
                 },

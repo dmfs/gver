@@ -1,10 +1,11 @@
 package org.dmfs.gradle.gitversion.dsl;
 
 import org.dmfs.gradle.gitversion.dsl.issuetracker.GitHub;
+import org.dmfs.gradle.gitversion.dsl.issuetracker.Gitea;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import groovy.lang.Closure;
@@ -37,6 +38,16 @@ public class GitVersionConfig
     }
 
 
+    public IssueTracker Gitea(Closure<?> closure)
+    {
+        IssueTracker issueTracker = new Gitea();
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.setDelegate(issueTracker);
+        closure.call();
+        return issueTracker;
+    }
+
+
     public void setReleaseBranchPattern(Pattern releaseBranchPattern)
     {
         mReleaseBranchPattern = releaseBranchPattern;
@@ -51,9 +62,29 @@ public class GitVersionConfig
     }
 
 
-    public Predicate<String> containsIssue(Closure<Boolean> matcher)
+    public Predicate<String> contains(Pattern pattern, Closure<Predicate<Matcher>> delegate)
     {
-        return issueTracker.map(s -> s.containsIssue(matcher)).orElseThrow(() -> new NoSuchElementException("No issue tracker configured"));
+        delegate.setResolveStrategy(Closure.DELEGATE_FIRST);
+        return s -> {
+            Matcher matcher = pattern.matcher(s);
+            int pos = 0;
+            while (matcher.find(pos))
+            {
+                pos = matcher.end();
+                delegate.setDelegate(new TextDsl(issueTracker));
+                if (delegate.call().test(matcher))
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+    }
+
+
+    public <T> Predicate<T> not(Predicate<T> delegate)
+    {
+        return delegate.negate();
     }
 
 

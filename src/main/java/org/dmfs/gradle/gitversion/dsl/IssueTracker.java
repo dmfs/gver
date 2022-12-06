@@ -7,5 +7,5 @@ import groovy.lang.Closure;
 
 public interface IssueTracker
 {
-    Predicate<String> containsIssue(Closure<Boolean> matcher);
+    Predicate<String> containsIssue(Closure<Predicate<Object>> matcher);
 }
