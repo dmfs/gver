@@ -71,7 +71,7 @@ public class GitVersionConfig
             while (matcher.find(pos))
             {
                 pos = matcher.end();
-                delegate.setDelegate(new TextDsl(issueTracker));
+                delegate.setDelegate(new RegExDsl(issueTracker));
                 if (delegate.call().test(matcher))
                 {
                     return true;

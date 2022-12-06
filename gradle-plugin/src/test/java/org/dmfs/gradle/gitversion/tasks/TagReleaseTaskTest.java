@@ -57,7 +57,7 @@ class TagReleaseTaskTest
                                         MAJOR.when(new CommitMessage(new Contains("#major"))),
                                         MINOR.when(new CommitMessage(new Contains("#minor"))),
                                         PATCH.when(new CommitMessage(new Contains("#patch"))),
-                                        UNKNOWN.when(((commit, branches) -> true))));
+                                        UNKNOWN.when(((repository1, commit, branches) -> true))));
                                 return p;
                             },
                             project -> having(
@@ -100,7 +100,7 @@ class TagReleaseTaskTest
                                         MAJOR.when(new CommitMessage(new Contains("#major"))),
                                         MINOR.when(new CommitMessage(new Contains("#minor"))),
                                         PATCH.when(new CommitMessage(new Contains("#patch"))),
-                                        UNKNOWN.when(((commit, branches) -> true))));
+                                        UNKNOWN.when(((repository1, commit, branches) -> true))));
                                 return p;
                             },
                             project -> having(

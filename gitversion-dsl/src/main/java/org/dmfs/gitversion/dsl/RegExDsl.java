@@ -7,12 +7,12 @@ import java.util.regex.Matcher;
 import groovy.lang.Closure;
 
 
-public final class TextDsl
+public final class RegExDsl
 {
     private final Optional<IssueTracker> mTracker;
 
 
-    public TextDsl(Optional<IssueTracker> tracker)
+    public RegExDsl(Optional<IssueTracker> tracker)
     {
         mTracker = tracker;
     }

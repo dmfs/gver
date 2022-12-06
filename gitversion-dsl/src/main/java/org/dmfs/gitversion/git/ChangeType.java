@@ -24,7 +24,7 @@ public enum ChangeType implements BiFunction<Version, String, Version>
 
     public ChangeTypeStrategy when(Condition condition)
     {
-        return (commit, branches) -> condition.matches(commit, branches) ? ChangeType.this : UNKNOWN;
+        return (repository, commit, branches) -> condition.matches(repository, commit, branches) ? ChangeType.this : UNKNOWN;
     }
 
 

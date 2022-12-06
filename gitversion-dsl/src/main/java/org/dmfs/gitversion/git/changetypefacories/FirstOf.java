@@ -6,6 +6,7 @@ import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.iterable.Seq;
 import org.dmfs.jems2.optional.First;
 import org.dmfs.jems2.single.Backed;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import static org.dmfs.gitversion.git.ChangeType.UNKNOWN;
@@ -32,12 +33,12 @@ public final class FirstOf implements ChangeTypeStrategy
 
 
     @Override
-    public ChangeType changeType(RevCommit commit, String branch)
+    public ChangeType changeType(Repository repository, RevCommit commit, String branch)
     {
         return new Backed<>(
             new First<>(
                 type -> type != UNKNOWN,
-                new Mapped<>(delegate -> delegate.changeType(commit, branch), mDelegates)),
+                new Mapped<>(delegate -> delegate.changeType(repository, commit, branch), mDelegates)),
             UNKNOWN).value();
     }
 }
