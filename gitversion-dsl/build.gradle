@@ -1,0 +1,42 @@
+plugins {
+    id 'groovy'
+    id 'java-gradle-plugin' // TODO: this module should not need this
+    id 'maven-publish'
+}
+
+apply from: '../jacoco.gradle'
+apply from: 'publish.gradle'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java { srcDirs = [] }    // no source dirs for the java compiler
+        groovy { srcDirs = ["src/main/java", "src/main/groovy"] }  // compile everything in src/ with groovy
+    }
+}
+
+dependencies {
+    implementation "org.dmfs:semver:0.1.0"
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
+    implementation 'org.dmfs:srcless-annotations:0.2.0'
+    implementation "org.dmfs:jems2:2.11.1"
+    annotationProcessor 'org.dmfs:srcless-processors:0.2.0'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
+    testImplementation "org.dmfs:jems2-testing:2.11.1"
+    testImplementation "org.hamcrest:hamcrest:2.2"
+    testImplementation "org.saynotobugs:confidence-core:0.5.1"
+    testImplementation "com.google.guava:guava:31.1-jre"
+    testAnnotationProcessor 'org.dmfs:srcless-processors:0.2.0'
+}
+
+test {
+    useJUnitPlatform()
+}
