@@ -11,24 +11,31 @@ import groovy.json.JsonSlurper;
 import groovy.lang.Closure;
 
 
-public final class GitHub implements IssueTracker
+public final class Gitea implements IssueTracker
 {
-    private String repo = "";
+    private String mHost = "";
+    private String mRepo = "";
     public String accessToken = "";
 
     private final FragileBiFunction<String, Optional<String>, FragileFunction<Integer, String, Exception>, Exception> issueFunction;
 
 
-    public GitHub()
+    public Gitea()
     {
-        this((repo, accessToken) ->
-            new GitHubIssueFunction(repo, connection -> accessToken.ifPresent(token -> connection.setRequestProperty("Authorization", "token " + token))));
+        this((baseUrl, accessToken) ->
+            new GiteaIssueFunction(baseUrl, connection -> accessToken.ifPresent(token -> connection.setRequestProperty("Authorization", "token " + token))));
     }
 
 
-    public GitHub(FragileBiFunction<String, Optional<String>, FragileFunction<Integer, String, Exception>, Exception> issueFunction)
+    public Gitea(FragileBiFunction<String, Optional<String>, FragileFunction<Integer, String, Exception>, Exception> issueFunction)
     {
         this.issueFunction = issueFunction;
+    }
+
+
+    public void setHost(String host)
+    {
+        this.mHost = host;
     }
 
 
@@ -38,7 +45,7 @@ public final class GitHub implements IssueTracker
         {
             throw new IllegalArgumentException("Illegal repo name " + repo);
         }
-        this.repo = repo;
+        this.mRepo = repo;
     }
 
 
@@ -49,9 +56,11 @@ public final class GitHub implements IssueTracker
         {
             try
             {
-                delegate.setDelegate(new GitHubDsl());
+                delegate.setDelegate(new GiteaDsl());
                 if (delegate.call().test(new JsonSlurper().parseText(
-                    issueFunction.value(repo, Optional.of(accessToken).filter(s -> !s.isEmpty())).value(Integer.valueOf(issue)))))
+                    issueFunction.value(String.format(
+                        "https://%s/api/v1/repos/%s/issues", mHost, mRepo
+                    ), Optional.of(accessToken).filter(s -> !s.isEmpty())).value(Integer.valueOf(issue)))))
                 {
                     return true;
                 }

@@ -4,7 +4,11 @@
 [![codecov](https://codecov.io/gh/dmfs/gitversion/branch/main/graph/badge.svg?token=Nkc6f2B7rO)](https://codecov.io/gh/dmfs/gitversion)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/dmfs/gitversion.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/dmfs/gitversion/context:java)
 
-Gradle versioning based on your Git history.
+A plugin to take care of versioning your code, so you don't have to.
+
+gitversion provides a domain specific language (DSL) that lets you describe in simple terms how to derive your version numbers from your
+git history. This includes expressions to test the names of affected files and to check the type of referenced issues, allowing you to
+skip a version update when no code or build file was altered or to derive the type of change (feature vs. bugfix) from the implemented/fixed ticket.
 
 # Example
 
@@ -36,21 +40,16 @@ gitVersion {
             commitMessage contains("(?i)#break\\b")
         }
         are minor when {
-            commitMessage containsIssue { issue -> issue.labels?.every { it.name != "bug" } }
+            commitMessage contains(~/(?i)\b(implement(s|ed)?|close[sd]?) #(?<issue>\d+)\b/) {
+                where("issue") { isIssue { not(labeled "bug") } }
+            }
         }
         are patch when {
-            commitMessage containsIssue { issue -> issue.labels?.any { it.name == "bug" } }
+            commitMessage contains(~/(?i)\b(fix(e[sd])?|resolve[sd]?) #(?<issue>\d+)\b/) {
+                where("issue") { isIssue { labeled "bug" } }
+            }
         }
-        are minor when {
-            commitMessage contains("#feature\\b")
-        }
-        are minor when {
-            commitMessage contains("(?i)\\b(implement(s|ed)?|close[sd]?) #\\d+\\b")
-        }
-        are patch when {
-            commitMessage contains("(?i)\\b(fix(e[sd])?|resolve[sd]?) #\\d+\\b")
-        }
-        otherwise patch
+        otherwise patch // every other change always results in a new patch version
     }
     preReleases {
         // pre-release on the main branch are versioned like a.b.c-beta.x
@@ -67,37 +66,177 @@ gitVersion {
 }
 ```
 
-## new in version 0.6
+## DSL
 
-The plugin now supports GitHub authentication to circumvent the unauthorized API quota. To generate a token go to https://github.com/settings/tokens
-and create a token without additional scopes (leave all boxes blank).
+The following sections describe the DSL to specify your versioning scheme. Note that the DSL is not stable yet any may change with every new
+version.
 
-Store the token in your global `gradle.properties` under a name like `GITHUB_API_TOKEN` and add an entry like
+### describing change types
 
+When practising semantic versioning, the most important step is to understand the kind of change (major, minor, bugfix). gitversion provides
+a DSL to describe how to derive the kind of change based on commit message or referenced issues.
+
+The top level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix change.
+The list of conditions is evaluated top to bottom until the first one matches.
+
+```groovy
+gitversion {
+    changes {
+        are major when {
+            // condition
+        }
+        are minor when {
+            // another condition
+        }
+        // more change types
+    }
+}
 ```
-    issueTracker GitHub {
-        repo = "dmfs/jems"
-        if (project.hasProperty("GITHUB_API_TOKEN")) {
-            accessToken = GITHUB_API_TOKEN // should be stored in your global or local gradle properties
+
+A change type can appear multiple times in the list if it's to be applied under multiple conditions.
+
+In addition to `major`, `minor`, `patch`, gitversion also knows a `none` type to identify trivial changes that should not result in a new version,
+e.g. typo fixes in documentation files.
+
+Note that all conditions inside a change type closure must match in order to apply the change type. If you need to express a logical `or` just 
+add describe the same change type with the other condition underneath the first one.
+
+The `otherwise` statement should be last in the list as it catches all cases that didn't match any of the other conditions. The default is to
+increase any pre-release version or create a new minor pre-release if no pre-release version is present yet.
+
+### conditions
+
+At present the only supported base condition is commit message matching. There are two operators to do that `commitMessage` and `commitTitle` to
+match an entire commit message or just its title respectively. Both take a `Predicate` that takes a `String` to decide whether the commit matches
+or not.
+
+A commit method is to match a certain hashtag to mark a commit a breaking change:
+
+```groovy
+gitversion {
+    changes {
+        are major when {
+            commitMessage contains(~/#breaking\b/)
         }
     }
+}
 ```
 
-to your `gitVersion` configuration (remove any old `githubRepo` entry). The `if`-clause ensures that users without that property still can build the 
-project.
+another common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "resolved" followed by a `#` and 
+a numeric issue identifier.
 
-DON'T PUT THE FILE CONTAINING THE TOKEN UNDER VERSION CONTROL!
-
-If you don't want to use an access token prepare for build errors due to the API quota. In this case the DSL now looks just like
-
-```
-    issueTracker GitHub {
-        repo = "dmfs/jems"
+```groovy
+gitversion {
+    changes {
+        are patch when {
+            commitMessage contains("(?i)\\b(fix(e[sd])?|resolve[sd]?) #\\d+\\b")
+        }
     }
+}
 ```
 
-Change the DSL method for parsing issues from `referencesGithubIssue` to `containsIssue`. Note, that, despite the name, this method currently
-only checks the first reference to an issue that matches the regex `#\d+`
+### Pre-Releases
+
+gitversion can apply different pre-release versions, based on the current head's name, e.g.
+```groovy
+gitversion {
+    ...
+    preReleases {
+        on ~/main/ use { "beta" }
+        on ~/feature\/(?<name>.*)/ use { "alpha-${group('name')}" }
+        on ~/.*/ use { "SHAPSHOT" }
+    }
+}
+```
+
+In the closure passed to `use` you can use any groups declared in your regular expression. The resulting pre-release version will automatically
+be sanitized to comply with semver syntax.
+
+When your pre-release doesn't end with a numeric segment, the next pre-relase will automatically append `.1` and continue counting from that.
+If the pre-release already ends with a numeric segment, it will be incremented by 1 with every subsequent pre-release.
+
+### Tagging releases
+
+gitversion can tag your current head with the current version or the next release version.
+
+The task `gitTag` creates a tag with the current pre-release version. The task `gitTagRelease` creates a tag with the next release version (unless
+the current commit already is a release version)
+
+To prevent accidental release version tags on non-release branches you can provide a pattern matching your release branch names.
+
+```groovy
+gitversion {
+    ...
+    releaseBranchPattern ~/(main|release\/.*)$/
+}
+```
+
+This will cause the `gitTagRelease` task to fail on any branch not matching that pattern. The default is `~/(main|master)$/` 
+
+## Issue trackers
+
+gitversion can determine the type of change by checking the issues referred to in the commit message. At present, it supports two issue trackers
+GitHub and Gitea.
+
+### GitHub
+
+If your tickets are tracked at GitHub you can determine the type of change from the labels of an issue.
+First you configure gitversion to check issues on GitHub:
+
+```groovy
+gitversion {
+    issueTracker GitHub {
+        repo = "dmfs/gitversion"  // account/repo
+        if (project.hasProperty("GITHUB_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
+            accessToken = GITHUB_API_TOKEN 
+        }
+    }
+    ...
+}
+```
+For public repos you can omit the API token. Note, however, that GitHub has a quota for unauthenticated API requests. When you don't
+provide an API token, the resulting version may be incorrect. Make sure you always provide a valid token in deployment environments.
+
+Now you can specify change types testing the issues.
+
+```groovy
+gitversion {
+    ...
+    are minor when {
+        commitMessage contains(~/#(?<issue>\d+)\b/) {
+            where("issue") { isIssue { labeled "enhancement" } }
+        }
+    }
+    are patch when {
+        commitMessage contains(~/#(?<issue>\d+)\b/) {
+            where("issue") { isIssue { not(labeled "enhancement") } }
+        }
+    }
+    ...
+}
+```
+
+This considers a change to be minor when it contains a GitHub issue reference to an issue with the label `enhancement` and to be a patch when
+it contains a GitHub issue reference to an issue without the label `enhancement`.
+
+### Gitea
+
+The Gitea DSL is much like the GitHub DSL, you just need to provide the Gitea host name
+
+```groovy
+gitversion {
+    issueTracker Gitea {
+        host = "gitea.example.com"
+        repo = "dmfs/gitversion"  // account/repo
+        if (project.hasProperty("GITEA_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
+            accessToken = GITEA_API_TOKEN 
+        }
+    }
+    ...
+}
+```
+
+
 
 ## License
 
