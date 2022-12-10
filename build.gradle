@@ -1,14 +1,7 @@
 plugins {
-    id 'groovy'
-    id 'java-gradle-plugin'
-    id "com.gradle.plugin-publish" version "0.19.0"
     id "org.dmfs.gitversion" version "0.7.0"
-    id 'maven-publish' // required to generate correct meta data
+    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0' apply false
 }
-
-apply from: 'jacoco.gradle'
-
-sourceCompatibility = JavaVersion.VERSION_1_8
 
 gitVersion {
     issueTracker GitHub {
@@ -43,62 +36,22 @@ gitVersion {
     releaseBranchPattern ~/main$/
 }
 
-repositories {
-    mavenCentral()
+if (project.hasProperty('SONATYPE_USERNAME') && project.hasProperty('SONATYPE_PASSWORD')) {
+    apply plugin: 'io.github.gradle-nexus.publish-plugin'
+
+    nexusPublishing {
+        repositories {
+            sonatype {
+                username = SONATYPE_USERNAME
+                password = SONATYPE_PASSWORD
+            }
+        }
+    }
 }
 
 allprojects {
     group 'org.dmfs'
     repositories {
         mavenCentral()
-    }
-}
-
-sourceSets {
-    main {
-        java { srcDirs = [] }    // no source dirs for the java compiler
-        groovy { srcDirs = ["src/main/java", "src/main/groovy"] }  // compile everything in src/ with groovy
-    }
-}
-dependencies {
-    implementation "org.dmfs:semver:0.1.0"
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
-    implementation 'org.dmfs:srcless-annotations:0.1.0'
-    implementation "org.dmfs:jems2:2.8.0"
-    annotationProcessor 'org.dmfs:srcless-processors:0.1.0'
-
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
-    testImplementation "org.dmfs:jems2-testing:2.8.0"
-    testImplementation "org.hamcrest:hamcrest:2.2"
-    testImplementation "org.saynotobugs:confidence-core:0.1.0"
-    testAnnotationProcessor 'org.dmfs:srcless-processors:0.1.0'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-gradlePlugin {
-    plugins {
-        gitVersionPlugin {
-            id = 'org.dmfs.gitversion'
-            implementationClass = 'org.dmfs.gradle.gitversion.GitVersionPlugin'
-        }
-    }
-}
-
-pluginBundle {
-    website = 'https://github.com/dmfs/gitversion'
-    vcsUrl = 'https://github.com/dmfs/gitversion'
-
-    plugins {
-        gitVersionPlugin {
-            // id is captured from java-gradle-plugin configuration
-            displayName = 'GitVersion plugin'
-            description = 'Gradle versioning based on git history.'
-            tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
-        }
     }
 }

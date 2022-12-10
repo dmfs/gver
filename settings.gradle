@@ -1,2 +1,4 @@
 rootProject.name = 'gitversion'
+include 'gradle-plugin'
+include 'gitversion-dsl'
 
