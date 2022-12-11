@@ -34,7 +34,8 @@ final class GitHubIssueFunction implements FragileFunction<Integer, String, Exce
             String.format(Locale.ENGLISH, "https://api.github.com/repos/%s/issues/%s", mRepoName, issueNumber)).openConnection();
         mAuthenticator.accept(connection);
         try (InputStream inputStream = connection.getInputStream();
-             Reader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+             Reader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             Reader reader = new BufferedReader(isr);
              StringWriter sw = new StringWriter();)
         {
             int readChars;
