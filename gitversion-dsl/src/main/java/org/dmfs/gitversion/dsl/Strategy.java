@@ -19,6 +19,7 @@ public class Strategy
     public final static ChangeType patch = PATCH;
     public final static ChangeType none = NONE;
 
+
     public ConditionConsumer are(ChangeType changeType)
     {
         return condition -> {

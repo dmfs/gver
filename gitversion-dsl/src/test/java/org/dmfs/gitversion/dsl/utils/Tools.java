@@ -9,8 +9,6 @@ import org.dmfs.jems2.procedure.ForEach;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
 import org.hamcrest.Matcher;
 
 import java.io.File;

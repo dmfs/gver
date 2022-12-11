@@ -1,6 +1,5 @@
 plugins {
     id 'groovy'
-    id 'java-gradle-plugin' // TODO: this module should not need this
     id 'maven-publish'
 }
 
@@ -21,12 +20,14 @@ sourceSets {
 }
 
 dependencies {
+    compileOnly 'org.codehaus.groovy:groovy-all:2.5.19'
     implementation "org.dmfs:semver:0.1.0"
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
     implementation 'org.dmfs:srcless-annotations:0.2.0'
     implementation "org.dmfs:jems2:2.11.1"
     annotationProcessor 'org.dmfs:srcless-processors:0.2.0'
 
+    testImplementation 'org.codehaus.groovy:groovy-all:2.5.19'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
