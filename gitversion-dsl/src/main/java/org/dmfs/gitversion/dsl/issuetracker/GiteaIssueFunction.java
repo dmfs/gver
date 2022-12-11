@@ -28,7 +28,8 @@ final class GiteaIssueFunction implements FragileFunction<Integer, String, Excep
         HttpURLConnection connection = (HttpURLConnection) new URL(mBaseUrl + "/" + issueNumber).openConnection();
         mAuthenticator.accept(connection);
         try (InputStream inputStream = connection.getInputStream();
-             Reader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+             Reader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             Reader reader = new BufferedReader(isr);
              StringWriter sw = new StringWriter();)
         {
             int readChars;
