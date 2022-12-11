@@ -51,20 +51,22 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
                 revWalk,
                 repository.parseCommit(repository.resolve("HEAD")),
                 versions(repository),
-                mPreReleaseStrategy.value(repository.getBranch()));
+                mPreReleaseStrategy.value(repository.getBranch()),
+                repository.getBranch());
         }
     }
 
 
-    private Version readVersion(RevWalk revWalk, RevCommit commit, Map<ObjectId, Version> tags, String preRelease)
+    private Version readVersion(RevWalk revWalk, RevCommit commit, Map<ObjectId, Version> tags, String preRelease, String branch)
     {
         return new Backed<>(
             new FirstPresent<>(
                 new MapEntry<>(tags, commit.getId()),
                 new First<>(
                     new Sorted<>(new Reverse<>(new VersionComparator()),
-                        new Mapped<>(v -> mStrategy.changeType(commit, "<FIXME>").value(v, preRelease),
-                            new Mapped<>(commit1 -> readVersion(revWalk, commit1, tags, preRelease), new Seq<>(parsed(revWalk, commit).getParents())))))),
+                        new Mapped<>(v -> mStrategy.changeType(commit, branch).value(v, preRelease),
+                            new Mapped<>(commit1 -> readVersion(revWalk, commit1, tags, preRelease, branch),
+                                new Seq<>(parsed(revWalk, commit).getParents())))))),
             () -> new PatchPreRelease(new Release(0, 0, 0), preRelease)).value();
     }
 

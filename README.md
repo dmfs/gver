@@ -98,7 +98,7 @@ A change type can appear multiple times in the list if it's to be applied under 
 In addition to `major`, `minor`, `patch`, gitversion also knows a `none` type to identify trivial changes that should not result in a new version,
 e.g. typo fixes in documentation files.
 
-Note that all conditions inside a change type closure must match in order to apply the change type. If you need to express a logical `or` just 
+Note that all conditions inside a change type closure must match in order to apply the change type. If you need to express a logical `or` just
 add describe the same change type with the other condition underneath the first one.
 
 The `otherwise` statement should be last in the list as it catches all cases that didn't match any of the other conditions. The default is to
@@ -106,11 +106,11 @@ increase any pre-release version or create a new minor pre-release if no pre-rel
 
 ### conditions
 
-At present the only supported base condition is commit message matching. There are two operators to do that `commitMessage` and `commitTitle` to
-match an entire commit message or just its title respectively. Both take a `Predicate` that takes a `String` to decide whether the commit matches
-or not.
+At present the type of change can be determined from the current branch name or the commit history up to the last tagged version.
 
-A commit method is to match a certain hashtag to mark a commit a breaking change:
+#### `commitMessage`
+
+`commitMessage` tests the entire commit message. You'd typically use it with `contains` or `matches`  to test it with a regular expression.
 
 ```groovy
 gitversion {
@@ -122,7 +122,9 @@ gitversion {
 }
 ```
 
-another common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "resolved" followed by a `#` and 
+This identifies major changes by the presence of the `#breaking` hashtag in the commit message.
+
+aAnother common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "resolved" followed by a `#` and
 a numeric issue identifier.
 
 ```groovy
@@ -135,9 +137,34 @@ gitversion {
 }
 ```
 
+#### `commitTitle`
+
+This works almost like `commitMessage` but only takes the first line of a commit message into account.
+
+#### `branch`
+
+This can be used to match the name of the current head.
+
+The following configuration considers all changes on the main branch as minor changes, whereas changes on `release` branches are considered to be
+patches.
+
+```groovy
+gitversion {
+    changes {
+        are minor when {
+            branch matches(~/main/)
+        }
+        are patch when {
+            branch matches(~/release\/.*/)
+        }
+    }
+}
+```
+
 ### Pre-Releases
 
 gitversion can apply different pre-release versions, based on the current head's name, e.g.
+
 ```groovy
 gitversion {
     ...
@@ -171,7 +198,7 @@ gitversion {
 }
 ```
 
-This will cause the `gitTagRelease` task to fail on any branch not matching that pattern. The default is `~/(main|master)$/` 
+This will cause the `gitTagRelease` task to fail on any branch not matching that pattern. The default is `~/(main|master)$/`
 
 ## Issue trackers
 
@@ -188,12 +215,13 @@ gitversion {
     issueTracker GitHub {
         repo = "dmfs/gitversion"  // account/repo
         if (project.hasProperty("GITHUB_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
-            accessToken = GITHUB_API_TOKEN 
+            accessToken = GITHUB_API_TOKEN
         }
     }
     ...
 }
 ```
+
 For public repos you can omit the API token. Note, however, that GitHub has a quota for unauthenticated API requests. When you don't
 provide an API token, the resulting version may be incorrect. Make sure you always provide a valid token in deployment environments.
 
@@ -229,14 +257,12 @@ gitversion {
         host = "gitea.example.com"
         repo = "dmfs/gitversion"  // account/repo
         if (project.hasProperty("GITEA_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
-            accessToken = GITEA_API_TOKEN 
+            accessToken = GITEA_API_TOKEN
         }
     }
     ...
 }
 ```
-
-
 
 ## License
 
