@@ -6,10 +6,7 @@ import org.dmfs.jems2.comparator.Reverse;
 import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.iterable.Seq;
 import org.dmfs.jems2.iterable.Sorted;
-import org.dmfs.jems2.optional.First;
-import org.dmfs.jems2.optional.FirstPresent;
-import org.dmfs.jems2.optional.MapEntry;
-import org.dmfs.jems2.optional.NullSafe;
+import org.dmfs.jems2.optional.*;
 import org.dmfs.jems2.single.Backed;
 import org.dmfs.jems2.single.Unchecked;
 import org.dmfs.semver.*;
@@ -33,12 +30,14 @@ import static org.eclipse.jgit.lib.Constants.R_TAGS;
 public final class GitVersion implements FragileFunction<Repository, Version, Exception>
 {
     private final ChangeTypeStrategy mStrategy;
+    private final Suffixes mSuffixes;
     private final Function<String, String> mPreReleaseStrategy;
 
 
-    public GitVersion(ChangeTypeStrategy strategy, Function<String, String> preReleaseStrategy)
+    public GitVersion(ChangeTypeStrategy strategy, Suffixes suffixes, Function<String, String> preReleaseStrategy)
     {
         mStrategy = strategy;
+        mSuffixes = suffixes;
         mPreReleaseStrategy = preReleaseStrategy;
     }
 
@@ -48,12 +47,20 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
     {
         try (RevWalk revWalk = new RevWalk(repository))
         {
-            return readVersion(
+            Version version = readVersion(
                 repository,
                 revWalk,
                 repository.parseCommit(repository.resolve("HEAD")),
                 versions(repository),
                 mPreReleaseStrategy.value(repository.getBranch()));
+
+            return new Backed<>(
+                new Zipped<>(
+                    version.preRelease(),
+                    mSuffixes.suffix(repository, repository.parseCommit(repository.resolve("HEAD")), repository.getBranch()),
+                    (current, suffix) -> new PreRelease(version, current + suffix)
+                ),
+                version).value();
         }
     }
 

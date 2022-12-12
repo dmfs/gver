@@ -61,6 +61,11 @@ gitVersion {
         // every other pre-release is versioned like a.b.c-SNAPSHOT.x
         on ~/.*/ use { "SHAPSHOT" }
     }
+    suffixes {
+        append ".${new Date().format("yyyyMMdd'T'HHmmss")}-SNAPSHOT" when {
+            branch not(matches(~/main/))
+        }
+    }
     // releases can only be made on the main branch, on other branches the `gitRelease` task will fail
     releaseBranchPattern ~/main$/ // defaults to ~/(main|master)$/
 }
@@ -68,7 +73,7 @@ gitVersion {
 
 ## DSL
 
-The following sections describe the DSL to specify your versioning scheme. Note that the DSL is not stable yet any may change with every new
+The following sections describe the DSL to specify your versioning scheme. Note that the DSL is not stable yet and may change with every new
 version.
 
 ### describing change types
@@ -179,7 +184,6 @@ gitVersion {
 }
 ```
 
-
 ### Pre-Releases
 
 gitversion can apply different pre-release versions, based on the current head's name, e.g.
@@ -200,6 +204,54 @@ be sanitized to comply with semver syntax.
 
 When your pre-release doesn't end with a numeric segment, the next pre-relase will automatically append `.1` and continue counting from that.
 If the pre-release already ends with a numeric segment, it will be incremented by 1 with every subsequent pre-release.
+
+### Suffixes
+
+gitversion can append a suffix to pre-release versions. The suffix is always appended verbatim. This is primarily useful to create
+`SNAPSHOT` releases.
+Suffixes are specified with `append "<suffix>" when {}` where the closure contains one of the conditions also used in the `changes` DSL.
+
+Examples
+
+```groovy
+gitversion {
+    ...
+    suffixes {
+        append ".${new Date().format("yyyyMMdd'T'HHmmss'Z'")}-SNAPSHOT" when {
+            branch not(matches(~/main/))
+        }
+    }
+    ...
+}
+```
+
+Appends a suffix like `20221213T001324Z-SNAPSHOT` to every pre-release that's not on a main branch.
+
+You can set a suffix unconfitionally by omitting `when` and the closure:
+
+```groovy
+gitversion {
+    ...
+    suffixes {
+        append ".${new Date().format("yyyyMMdd'T'HHmmss'Z'")}-SNAPSHOT"
+    }
+    ...
+}
+```
+
+If no suffixes are specified, the suffix `".${new Date().format("yyyyMMdd'T'HHmmss'Z'")}-SNAPSHOT"` is added to every pre-release.
+
+To disable any suffix use
+
+```groovy
+gitversion {
+    ...
+    suffixes {
+        append ""
+    }
+    ...
+}
+```
 
 ### Tagging releases
 

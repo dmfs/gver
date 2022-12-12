@@ -7,6 +7,7 @@ import org.dmfs.gitversion.git.predicates.Contains;
 import org.dmfs.jems2.Procedure;
 import org.dmfs.jems2.function.Unchecked;
 import org.dmfs.jems2.iterable.Mapped;
+import org.dmfs.jems2.optional.Present;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -58,6 +59,8 @@ class TagTaskTest
                                         MINOR.when(new CommitMessage(new Contains("#minor"))),
                                         PATCH.when(new CommitMessage(new Contains("#patch"))),
                                         UNKNOWN.when(((repository1, commit, branches) -> true))));
+                                ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mSuffixes.mSuffixes.replaceAll(
+                                    any -> (repository12, commit, branch) -> new Present<>("-SNAPSHOT"));
                                 return p;
                             },
                             project -> having(
@@ -65,7 +68,7 @@ class TagTaskTest
                                 proc -> repo -> proc.process(project),
                                 processes(() -> repository,
                                     having(new Unchecked<Repository, Iterable<String>, Exception>(r -> new Mapped<>(Ref::getName, new Git(r).tagList().call())),
-                                        containsInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1"))
+                                        containsInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1-SNAPSHOT"))
                                 ))))));
     }
 }
