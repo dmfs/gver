@@ -161,6 +161,25 @@ gitversion {
 }
 ```
 
+#### affects
+
+This condition allows you to determine a change type based on the files that have been affected by a commit. It takes a Predicate of a `Set<String>`
+like `anyThat`, `noneThat` or `only`.
+
+Example:
+
+```groovy
+gitversion {
+    changes {
+        are none when {
+            affects only(matches(~/.*\.(md|adoc)/)) // only documentation updated, don't generate new version
+        }
+        ...
+    }
+}
+```
+
+
 ### Pre-Releases
 
 gitversion can apply different pre-release versions, based on the current head's name, e.g.

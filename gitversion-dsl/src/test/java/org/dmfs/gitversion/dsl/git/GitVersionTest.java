@@ -8,6 +8,7 @@ import org.dmfs.gitversion.git.WithoutBuildMeta;
 import org.dmfs.gitversion.git.changetypefacories.FirstOf;
 import org.dmfs.gitversion.git.changetypefacories.condition.CommitMessage;
 import org.dmfs.gitversion.git.predicates.Contains;
+import org.dmfs.gradle.gitversion.git.changetypefacories.condition.Affects;
 import org.dmfs.jems2.single.Unchecked;
 import org.dmfs.semver.VersionSequence;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +34,7 @@ class GitVersionTest
         MINOR.when(new CommitMessage(new Contains("#minor"))),
         PATCH.when(new CommitMessage(new Contains("#patch"))),
         NONE.when(new CommitMessage(new Contains("#trivial"))),
-        UNKNOWN.when(((commit, branches) -> true))
+        UNKNOWN.when(((treeWalk, commit, branches) -> true))
     );
 
 
@@ -94,4 +95,30 @@ class GitVersionTest
                                 new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().trim()))
                     ))));
     }
+
+
+    ChangeTypeStrategy mAffectsStrategy = new FirstOf(
+        MINOR.when(new Affects(set -> set.stream().anyMatch(f -> f.endsWith("t.important")))),
+        NONE.when(new Affects(set -> set.stream().anyMatch(f -> f.endsWith("t.ignore")))),
+        MAJOR.when((repository, commit, branch) -> true)
+    );
+
+
+    @ParameterizedTest
+    @ValueSource(strings = { "0.1.0.trivial-update", "0.2.0-alpha.nontrivial-update" })
+    void testAffects(String bundle)
+    {
+        assertThat(new GitVersion(mAffectsStrategy, ignored -> "alpha"),
+            withTempFolder(tempDir ->
+                withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
+                    tempDir,
+                    "main",
+                    repo -> associates(repo,
+                        having(
+                            v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
+                            equalTo(
+                                new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().trim()))
+                    ))));
+    }
+
 }

@@ -1,7 +1,7 @@
 package org.dmfs.gitversion.dsl.dsl;
 
 import org.dmfs.gitversion.dsl.IssueTracker;
-import org.dmfs.gitversion.dsl.TextDsl;
+import org.dmfs.gitversion.dsl.RegExDsl;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -16,7 +16,7 @@ import static org.saynotobugs.confidence.Assertion.assertThat;
 import static org.saynotobugs.confidence.quality.Core.*;
 
 
-public final class TextDslTest
+public final class RegExDslTest
 {
     @Test
     void test()
@@ -35,7 +35,7 @@ public final class TextDslTest
         Matcher nonMatching = Pattern.compile("123#(?<gr>\\d+)").matcher("123#987");
         nonMatching.matches();
 
-        assertThat(new TextDsl(Optional.of(mockIssueTracker)),
+        assertThat(new RegExDsl(Optional.of(mockIssueTracker)),
             has("where", dsl -> dsl.where("gr", mockClosure),
                 allOf(satisfiedBy(matching),
                     not(satisfiedBy(nonMatching)))));

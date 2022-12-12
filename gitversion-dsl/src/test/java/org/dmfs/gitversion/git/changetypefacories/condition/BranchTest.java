@@ -1,5 +1,6 @@
 package org.dmfs.gitversion.git.changetypefacories.condition;
 
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.Test;
 import org.saynotobugs.confidence.quality.composite.AllOf;
@@ -17,8 +18,8 @@ class BranchTest
     {
         assertThat(new Branch("xyz"::equals),
             new AllOf<>(
-                matches(mock(RevCommit.class), "xyz"),
-                not(matches(mock(RevCommit.class), "abc"))));
+                matches(mock(Repository.class), mock(RevCommit.class), "xyz"),
+                not(matches(mock(Repository.class), mock(RevCommit.class), "abc"))));
     }
 
 }

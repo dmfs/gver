@@ -35,7 +35,7 @@ public class Strategy
 
     public void otherwise(ChangeType changeType)
     {
-        mChangeTypeStrategies.add(changeType.when(((commit, branches) -> true)));
+        mChangeTypeStrategies.add(changeType.when(((repository, commit, branches) -> true)));
     }
 
 }

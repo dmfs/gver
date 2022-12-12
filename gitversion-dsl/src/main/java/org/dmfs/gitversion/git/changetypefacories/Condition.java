@@ -1,9 +1,10 @@
 package org.dmfs.gitversion.git.changetypefacories;
 
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 
 public interface Condition
 {
-    boolean matches(RevCommit commit, String branch);
+    boolean matches(Repository repository, RevCommit commit, String branch);
 }
