@@ -80,7 +80,7 @@ The top level element is `changes` which takes a closure describing when a chang
 The list of conditions is evaluated top to bottom until the first one matches.
 
 ```groovy
-gitversion {
+gitVersion {
     changes {
         are major when {
             // condition
@@ -113,7 +113,7 @@ At present the type of change can be determined from the current branch name or 
 `commitMessage` tests the entire commit message. You'd typically use it with `contains` or `matches`  to test it with a regular expression.
 
 ```groovy
-gitversion {
+gitVersion {
     changes {
         are major when {
             commitMessage contains(~/#breaking\b/)
@@ -128,7 +128,7 @@ aAnother common pattern is to consider a change a bugfix when it contains one of
 a numeric issue identifier.
 
 ```groovy
-gitversion {
+gitVersion {
     changes {
         are patch when {
             commitMessage contains("(?i)\\b(fix(e[sd])?|resolve[sd]?) #\\d+\\b")
@@ -149,7 +149,7 @@ The following configuration considers all changes on the main branch as minor ch
 patches.
 
 ```groovy
-gitversion {
+gitVersion {
     changes {
         are minor when {
             branch matches(~/main/)
@@ -169,7 +169,7 @@ like `anyThat`, `noneThat` or `only`.
 Example:
 
 ```groovy
-gitversion {
+gitVersion {
     changes {
         are none when {
             affects only(matches(~/.*\.(md|adoc)/)) // only documentation updated, don't generate new version
@@ -185,7 +185,7 @@ gitversion {
 gitversion can apply different pre-release versions, based on the current head's name, e.g.
 
 ```groovy
-gitversion {
+gitVersion {
     ...
     preReleases {
         on ~/main/ use { "beta" }
@@ -211,7 +211,7 @@ the current commit already is a release version)
 To prevent accidental release version tags on non-release branches you can provide a pattern matching your release branch names.
 
 ```groovy
-gitversion {
+gitVersion {
     ...
     releaseBranchPattern ~/(main|release\/.*)$/
 }
@@ -230,7 +230,7 @@ If your tickets are tracked at GitHub you can determine the type of change from 
 First you configure gitversion to check issues on GitHub:
 
 ```groovy
-gitversion {
+gitVersion {
     issueTracker GitHub {
         repo = "dmfs/gitversion"  // account/repo
         if (project.hasProperty("GITHUB_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
@@ -247,7 +247,7 @@ provide an API token, the resulting version may be incorrect. Make sure you alwa
 Now you can specify change types testing the issues.
 
 ```groovy
-gitversion {
+gitVersion {
     ...
     are minor when {
         commitMessage contains(~/#(?<issue>\d+)\b/) {
@@ -271,7 +271,7 @@ it contains a GitHub issue reference to an issue without the label `enhancement`
 The Gitea DSL is much like the GitHub DSL, you just need to provide the Gitea host name
 
 ```groovy
-gitversion {
+gitVersion {
     issueTracker Gitea {
         host = "gitea.example.com"
         repo = "dmfs/gitversion"  // account/repo
