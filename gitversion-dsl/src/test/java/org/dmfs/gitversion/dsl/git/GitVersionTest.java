@@ -4,6 +4,7 @@ import com.google.common.io.Files;
 
 import org.dmfs.gitversion.git.ChangeTypeStrategy;
 import org.dmfs.gitversion.git.GitVersion;
+import org.dmfs.gitversion.git.Suffixes;
 import org.dmfs.gitversion.git.WithoutBuildMeta;
 import org.dmfs.gitversion.git.changetypefacories.FirstOf;
 import org.dmfs.gitversion.git.changetypefacories.condition.CommitMessage;
@@ -37,6 +38,11 @@ class GitVersionTest
         UNKNOWN.when(((treeWalk, commit, branches) -> true))
     );
 
+    Suffixes mSuffixes = new Suffixes();
+
+    {
+        mSuffixes.mSuffixes.clear();
+    }
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -45,7 +51,7 @@ class GitVersionTest
         "0.2.0-alpha.2.feature", "0.1.1-alpha.feature", "0.1.1-annotated", "0.2.0-alpha.3.merge", "0.2.0", "0.2.0-trivial-change" })
     void testMainNew(String bundle)
     {
-        assertThat(new GitVersion(mStrategy, ignored -> "alpha"),
+        assertThat(new GitVersion(mStrategy, mSuffixes, ignored -> "alpha"),
             withTempFolder(tempDir ->
                 withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
                     tempDir,
@@ -65,7 +71,7 @@ class GitVersionTest
         "0.2.0-alpha.3.merge" })
     void testFeature(String bundle)
     {
-        assertThat(new GitVersion(mStrategy, ignored -> "alpha"),
+        assertThat(new GitVersion(mStrategy, mSuffixes, ignored -> "alpha"),
             withTempFolder(tempDir ->
                 withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
                     tempDir,
@@ -83,7 +89,7 @@ class GitVersionTest
     @CsvSource({ "0.2.0-main-b,main", "0.2.0-main-b.1,main", "0.2.0-alpha-b.2,alpha" })
     void testAlphaConfigFeature(String bundle, String branch)
     {
-        assertThat(new GitVersion(mStrategy, b -> b + "-b"),
+        assertThat(new GitVersion(mStrategy, mSuffixes, b -> b + "-b"),
             withTempFolder(tempDir ->
                 withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
                     tempDir,
@@ -108,7 +114,7 @@ class GitVersionTest
     @ValueSource(strings = { "0.1.0.trivial-update", "0.2.0-alpha.nontrivial-update" })
     void testAffects(String bundle)
     {
-        assertThat(new GitVersion(mAffectsStrategy, ignored -> "alpha"),
+        assertThat(new GitVersion(mAffectsStrategy, mSuffixes, ignored -> "alpha"),
             withTempFolder(tempDir ->
                 withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
                     tempDir,

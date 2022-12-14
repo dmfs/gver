@@ -2,6 +2,7 @@ package org.dmfs.gitversion.dsl;
 
 import org.dmfs.gitversion.dsl.issuetracker.GitHub;
 import org.dmfs.gitversion.dsl.issuetracker.Gitea;
+import org.dmfs.gitversion.git.Suffixes;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -20,6 +21,8 @@ public class GitVersionConfig
     public Pattern mReleaseBranchPattern = Pattern.compile("(main|master)$");
 
     public PreReleaseConfig mPreReleaseStrategies = new PreReleaseConfig();
+
+    public Suffixes mSuffixes = new Suffixes();
 
 
     public void setIssueTracker(IssueTracker issueTracker)
@@ -94,4 +97,14 @@ public class GitVersionConfig
         closure.setDelegate(mPreReleaseStrategies);
         closure.call();
     }
+
+
+    public void suffixes(Closure<?> closure)
+    {
+        mSuffixes.mSuffixes.clear();
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.setDelegate(mSuffixes);
+        closure.call();
+    }
+
 }

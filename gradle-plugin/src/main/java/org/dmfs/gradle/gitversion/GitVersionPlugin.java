@@ -40,6 +40,7 @@ public final class GitVersionPlugin implements Plugin<Project>
                             return new VersionSequence(
                                 new GitVersion(
                                     new FirstOf(extension.mChangeTypeStrategy.mChangeTypeStrategies),
+                                    extension.mSuffixes,
                                     branch -> extension.mPreReleaseStrategies.mBranchConfigs.stream()
                                         .map(preReleaseStrategy -> preReleaseStrategy.apply(branch))
                                         .filter(Optional::isPresent)
