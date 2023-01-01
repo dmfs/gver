@@ -227,7 +227,7 @@ gitversion {
 
 Appends a suffix like `20221213T001324Z-SNAPSHOT` to every pre-release that's not on a main branch.
 
-You can set a suffix unconfitionally by omitting `when` and the closure:
+You can set a suffix unconditionally by omitting `when` and the closure:
 
 ```groovy
 gitversion {
@@ -334,6 +334,12 @@ gitVersion {
     ...
 }
 ```
+
+## Dirty working trees
+
+At present a dirty working tree always results in a pre-release version. Depending on the last tag, either the pre-release or the minor version
+is incremented. This prevents accidental relase builds when after a file has been changed.
+
 
 ## License
 

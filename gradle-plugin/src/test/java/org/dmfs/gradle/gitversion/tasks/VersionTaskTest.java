@@ -39,31 +39,36 @@ class VersionTaskTest
                 }
             },
             stdoutCaptured(stdProvider ->
-                withTempFolder(tempDir ->
-                    withRepository(getClass().getClassLoader().getResource("0.0.2-alpha.1.bundle"),
-                        tempDir,
-                        "main",
-                        repository ->
-                            given(
-                                () ->
-                                {
-                                    Project p = ProjectBuilder.builder().withProjectDir(tempDir).build();
-                                    p.getPluginManager().apply("org.dmfs.gitversion");
-                                    ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy = new Strategy();
-                                    ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
-                                        asList(
-                                            MAJOR.when(new CommitMessage(new Contains("#major"))),
-                                            MINOR.when(new CommitMessage(new Contains("#minor"))),
-                                            PATCH.when(new CommitMessage(new Contains("#patch"))),
-                                            UNKNOWN.when(((repository1, commit, branches) -> true))));
-                                    return p;
-                                },
-                                project -> having(
-                                    "stdout",
-                                    proc -> repo -> proc.process(project),
-                                    processes(() -> stdProvider,
-                                        having(Generator::next, containsString("0.0.2-alpha.1"))
-                                    )))))));
+                withTempFolder(
+                    userHome ->
+                        withTempFolder(tempDir ->
+                            withRepository(getClass().getClassLoader().getResource("0.0.2-alpha.1.bundle"),
+                                tempDir,
+                                "main",
+                                repository ->
+                                    given(
+                                        () ->
+                                        {
+                                            Project p = ProjectBuilder.builder()
+                                                .withProjectDir(tempDir)
+                                                .withGradleUserHomeDir(userHome)
+                                                .build();
+                                            p.getPluginManager().apply("org.dmfs.gitversion");
+                                            ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy = new Strategy();
+                                            ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
+                                                asList(
+                                                    MAJOR.when(new CommitMessage(new Contains("#major"))),
+                                                    MINOR.when(new CommitMessage(new Contains("#minor"))),
+                                                    PATCH.when(new CommitMessage(new Contains("#patch"))),
+                                                    UNKNOWN.when(((repository1, commit, branches) -> true))));
+                                            return p;
+                                        },
+                                        project -> having(
+                                            "stdout",
+                                            proc -> repo -> proc.process(project),
+                                            processes(() -> stdProvider,
+                                                having(Generator::next, containsString("0.0.2-alpha.1"))
+                                            ))))))));
 
     }
 

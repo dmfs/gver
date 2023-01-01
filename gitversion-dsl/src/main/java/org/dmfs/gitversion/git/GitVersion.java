@@ -47,12 +47,13 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
     {
         try (RevWalk revWalk = new RevWalk(repository))
         {
-            Version version = readVersion(
-                repository,
-                revWalk,
-                repository.parseCommit(repository.resolve("HEAD")),
-                versions(repository),
-                mPreReleaseStrategy.value(repository.getBranch()));
+            Version version = adjustForDirtyRepo(repository,
+                readVersion(
+                    repository,
+                    revWalk,
+                    repository.parseCommit(repository.resolve("HEAD")),
+                    versions(repository),
+                    mPreReleaseStrategy.value(repository.getBranch())));
 
             return new Backed<>(
                 new Zipped<>(
@@ -62,6 +63,14 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
                 ),
                 version).value();
         }
+    }
+
+
+    private Version adjustForDirtyRepo(Repository repository, Version version) throws GitAPIException
+    {
+        return !new Git(repository).diff().call().isEmpty() || !new Git(repository).diff().setCached(true).call().isEmpty()
+            ? new NextPreRelease(version)
+            : version;
     }
 
 

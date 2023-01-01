@@ -42,33 +42,39 @@ class TagTaskTest
                     throw new AssertionError("Unexpected Exception", e);
                 }
             },
-            withTempFolder(tempDir ->
-                withRepository(getClass().getClassLoader().getResource("0.0.2-alpha.1.bundle"),
-                    tempDir,
-                    "main",
-                    repository ->
-                        given(
-                            () ->
-                            {
-                                Project p = ProjectBuilder.builder().withProjectDir(tempDir).build();
-                                p.getPluginManager().apply("org.dmfs.gitversion");
-                                ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy = new Strategy();
-                                ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
-                                    asList(
-                                        MAJOR.when(new CommitMessage(new Contains("#major"))),
-                                        MINOR.when(new CommitMessage(new Contains("#minor"))),
-                                        PATCH.when(new CommitMessage(new Contains("#patch"))),
-                                        UNKNOWN.when(((repository1, commit, branches) -> true))));
-                                ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mSuffixes.mSuffixes.replaceAll(
-                                    any -> (repository12, commit, branch) -> new Present<>("-SNAPSHOT"));
-                                return p;
-                            },
-                            project -> having(
-                                "p",
-                                proc -> repo -> proc.process(project),
-                                processes(() -> repository,
-                                    having(new Unchecked<Repository, Iterable<String>, Exception>(r -> new Mapped<>(Ref::getName, new Git(r).tagList().call())),
-                                        containsInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1-SNAPSHOT"))
-                                ))))));
+            withTempFolder(
+                userHome ->
+                    withTempFolder(tempDir ->
+                        withRepository(getClass().getClassLoader().getResource("0.0.2-alpha.1.bundle"),
+                            tempDir,
+                            "main",
+                            repository ->
+                                given(
+                                    () ->
+                                    {
+                                        Project p = ProjectBuilder.builder()
+                                            .withProjectDir(tempDir)
+                                            .withGradleUserHomeDir(userHome)
+                                            .build();
+                                        p.getPluginManager().apply("org.dmfs.gitversion");
+                                        ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy = new Strategy();
+                                        ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
+                                            asList(
+                                                MAJOR.when(new CommitMessage(new Contains("#major"))),
+                                                MINOR.when(new CommitMessage(new Contains("#minor"))),
+                                                PATCH.when(new CommitMessage(new Contains("#patch"))),
+                                                UNKNOWN.when(((repository1, commit, branches) -> true))));
+                                        ((GitVersionConfig) p.getExtensions().getByName("gitVersion")).mSuffixes.mSuffixes.replaceAll(
+                                            any -> (repository12, commit, branch) -> new Present<>("-SNAPSHOT"));
+                                        return p;
+                                    },
+                                    project -> having(
+                                        "p",
+                                        proc -> repo -> proc.process(project),
+                                        processes(() -> repository,
+                                            having(new Unchecked<Repository, Iterable<String>, Exception>(
+                                                    r -> new Mapped<>(Ref::getName, new Git(r).tagList().call())),
+                                                containsInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1-SNAPSHOT"))
+                                        )))))));
     }
 }

@@ -12,6 +12,7 @@ import org.dmfs.gitversion.git.predicates.Contains;
 import org.dmfs.gradle.gitversion.git.changetypefacories.condition.Affects;
 import org.dmfs.jems2.single.Unchecked;
 import org.dmfs.semver.VersionSequence;
+import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -19,6 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.File;
 import java.nio.charset.Charset;
 
+import static org.dmfs.gitversion.dsl.utils.Matchers.given;
 import static org.dmfs.gitversion.dsl.utils.Tools.withRepository;
 import static org.dmfs.gitversion.dsl.utils.Tools.withTempFolder;
 import static org.dmfs.gitversion.git.ChangeType.*;
@@ -125,6 +127,79 @@ class GitVersionTest
                             equalTo(
                                 new Unchecked<>(() -> Files.asCharSource(new File(tempDir, "version"), Charset.defaultCharset()).read()).value().trim()))
                     ))));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+        "0.1.0-alpha, 0.1.0-alpha.1",
+        "0.2.0,       0.3.0-alpha" })
+    void testDirtyNewFile(String bundle, String version)
+    {
+        assertThat(new GitVersion(mStrategy, mSuffixes, ignored -> "alpha"),
+            withTempFolder(tempDir ->
+                withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
+                    tempDir,
+                    "main",
+                    repo ->
+                        given(
+                            () -> new File(tempDir, "dirty").createNewFile(),
+                            ignored ->
+                                associates(repo,
+                                    having(
+                                        v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
+                                        equalTo(version))
+                                )))));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+        "0.1.0-alpha, 0.1.0-alpha.1",
+        "0.2.0,       0.3.0-alpha" })
+    void testDirtyChanged(String bundle, String version)
+    {
+        assertThat(new GitVersion(mStrategy, mSuffixes, ignored -> "alpha"),
+            withTempFolder(tempDir ->
+                withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
+                    tempDir,
+                    "main",
+                    repo ->
+                        given(
+                            () -> new File(tempDir, "version").delete(),
+                            ignored ->
+                                associates(repo,
+                                    having(
+                                        v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
+                                        equalTo(version))
+                                )))));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+        "0.1.0-alpha, 0.1.0-alpha.1",
+        "0.2.0,       0.3.0-alpha" })
+    void testDirtyStaged(String bundle, String version)
+    {
+        assertThat(new GitVersion(mStrategy, mSuffixes, ignored -> "alpha"),
+            withTempFolder(tempDir ->
+                withRepository(getClass().getClassLoader().getResource(bundle + ".bundle"),
+                    tempDir,
+                    "main",
+                    repo ->
+                        given(
+                            () -> {
+                                new File(tempDir, "dirty").createNewFile();
+                                new Git(repo).add().addFilepattern("dirty").call();
+                                return true;
+                            },
+                            ignored ->
+                                associates(repo,
+                                    having(
+                                        v -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
+                                        equalTo(version))
+                                )))));
     }
 
 }
