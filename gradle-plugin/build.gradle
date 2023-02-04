@@ -55,3 +55,15 @@ pluginBundle {
         }
     }
 }
+
+gradle.taskGraph.whenReady {
+    tasks.withType(PublishToMavenRepository) { PublishToMavenRepository t ->
+        if ( t.repository == null ) {
+            logger.info( "Task `{}` had null repository", t.path )
+        }
+        else if ( t.repository.name == "sonatype" ) {
+            logger.lifecycle( "Disabling task `{}` because it publishes to Sonatype", t.path )
+            t.enabled = false
+        }
+    }
+}
