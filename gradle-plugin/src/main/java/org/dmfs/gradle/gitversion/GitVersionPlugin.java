@@ -35,6 +35,7 @@ public final class GitVersionPlugin implements Plugin<Project>
             {
                 private final Single<String> mVersion = new Frozen<>(
                     () -> {
+                        long start = System.currentTimeMillis();
                         try (Repository repo = ProjectRepositoryFunction.INSTANCE.value(project))
                         {
                             return new VersionSequence(
@@ -53,6 +54,10 @@ public final class GitVersionPlugin implements Plugin<Project>
                         catch (Exception e)
                         {
                             throw new RuntimeException(e);
+                        }
+                        finally
+                        {
+                            project.getLogger().debug("gitVersion execution time: {} ms", System.currentTimeMillis() - start);
                         }
                     }
                 );

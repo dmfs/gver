@@ -217,7 +217,7 @@ Examples
 gitversion {
     ...
     suffixes {
-        append ".${new Date().format("yyyyMMdd'T'HHmmss'Z'")}-SNAPSHOT" when {
+        append ".${new Date().format("yyyy-MM-dd")}-SNAPSHOT" when {
             branch not(matches(~/main/))
         }
     }
@@ -225,7 +225,7 @@ gitversion {
 }
 ```
 
-Appends a suffix like `20221213T001324Z-SNAPSHOT` to every pre-release that's not on a main branch.
+Appends a suffix like `2022-12-13-SNAPSHOT` to every pre-release that's not on a main branch.
 
 You can set a suffix unconditionally by omitting `when` and the closure:
 
@@ -233,13 +233,28 @@ You can set a suffix unconditionally by omitting `when` and the closure:
 gitversion {
     ...
     suffixes {
-        append ".${new Date().format("yyyyMMdd'T'HHmmss'Z'")}-SNAPSHOT"
+        append ".${new Date().format("yyyy-MM-dd")}-SNAPSHOT"
     }
     ...
 }
 ```
 
-If no suffixes are specified, the suffix `".${new Date().format("yyyyMMdd'T'HHmmss'Z'")}-SNAPSHOT"` is added to every pre-release.
+Unconditional suffixes always match, hence any `append` clause following an unconditional suffix will never be applied.
+
+If no suffixes are specified, the suffix `".<timestamp>-SNAPSHOT"` is added to every pre-release where `<timestamp>` is either the date and time
+(in UTC and RFC 5545 notation) of the HEAD commit in case the working tree is clean or the current date and time if the working tree is dirty.
+
+In order to apply the default suffix conditionally you can use the special suffix `DEFAULT` like
+
+```groovy
+gitversion {
+    ...
+    suffixes {
+        append DEFAULT when { branch not(matches(~/main/)) }
+    }
+    ...
+}
+```
 
 To disable any suffix use
 
@@ -339,7 +354,6 @@ gitVersion {
 
 At present a dirty working tree always results in a pre-release version. Depending on the last tag, either the pre-release or the minor version
 is incremented. This prevents accidental relase builds when after a file has been changed.
-
 
 ## License
 

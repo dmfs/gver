@@ -67,7 +67,7 @@ class VersionTaskTest
                                             "stdout",
                                             proc -> repo -> proc.process(project),
                                             processes(() -> stdProvider,
-                                                having(Generator::next, containsString("0.0.2-alpha.1"))
+                                                having(Generator::next, containsString("0.0.2-alpha.1.20220116T202206Z-SNAPSHOT"))
                                             ))))))));
 
     }
