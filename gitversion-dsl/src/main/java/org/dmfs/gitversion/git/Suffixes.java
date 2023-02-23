@@ -3,19 +3,19 @@ package org.dmfs.gitversion.git;
 import org.dmfs.gitversion.dsl.Conditions;
 import org.dmfs.gitversion.dsl.SuffixPattern;
 import org.dmfs.gitversion.dsl.SuffixStrategy;
+import org.dmfs.gitversion.git.predicates.IsDirty;
 import org.dmfs.jems2.Optional;
 import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.optional.Absent;
 import org.dmfs.jems2.optional.FirstPresent;
 import org.dmfs.jems2.optional.Present;
+import org.dmfs.rfc5545.DateTime;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import java.util.function.Supplier;
 
 import groovy.lang.Closure;
 
@@ -24,28 +24,29 @@ import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 
 public final class Suffixes
 {
-    public final List<SuffixStrategy> mSuffixes = new ArrayList<>(asList(new SuffixStrategy()
-    {
-        @Override
-        public Optional<String> changeType(Repository repository, RevCommit commit, String branch)
-        {
-            return new Present<>("." + new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.ENGLISH).format(new Date()) + "-SNAPSHOT");
-        }
-    }));
+    private final static Supplier<SuffixStrategy> DEFAULT_STRATEGY = () ->
+        (SuffixStrategy) (repository, commit, branch) -> new Present<>("." +
+            (new IsDirty().satisfiedBy(repository)
+                ? DateTime.now()
+                : new DateTime(commit.getCommitTime() * 1000L)) // clean repo gets the last commit date
+            + "-SNAPSHOT");
+
+    public final List<SuffixStrategy> mSuffixes = new ArrayList<>(asList(DEFAULT_STRATEGY.get()));
+
+    /**
+     * {@code "\u0000"} is not a valid suffix character. We use it to represent the default suffix.
+     */
+    public final static String DEFAULT = "\u0000";
 
 
     public SuffixPattern append(String suffix)
     {
-        SuffixStrategy defaultStrategy = new SuffixStrategy()
-        {
-            @Override
-            public Optional<String> changeType(Repository repository, RevCommit commit, String branch)
-            {
-                return new Present<>(suffix);
-            }
-        };
+        SuffixStrategy defaultStrategy = DEFAULT.equals(suffix)
+            ? DEFAULT_STRATEGY.get()
+            : (repository, commit, branch) -> new Present<>(suffix);
 
         mSuffixes.add(defaultStrategy);
+
         return
             condition -> {
 

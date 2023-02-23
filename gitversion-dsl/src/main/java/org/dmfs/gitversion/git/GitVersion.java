@@ -47,18 +47,19 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
     {
         try (RevWalk revWalk = new RevWalk(repository))
         {
+            RevCommit head = repository.parseCommit(repository.resolve("HEAD"));
             Version version = adjustForDirtyRepo(repository,
                 readVersion(
                     repository,
                     revWalk,
-                    repository.parseCommit(repository.resolve("HEAD")),
+                    head,
                     versions(repository),
                     mPreReleaseStrategy.value(repository.getBranch())));
 
             return new Backed<>(
                 new Zipped<>(
                     version.preRelease(),
-                    mSuffixes.suffix(repository, repository.parseCommit(repository.resolve("HEAD")), repository.getBranch()),
+                    mSuffixes.suffix(repository, head, repository.getBranch()),
                     (current, suffix) -> new PreRelease(version, current + suffix)
                 ),
                 version).value();
