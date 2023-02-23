@@ -1,12 +1,8 @@
-# gitversion
-
-[![Build Status](https://travis-ci.com/dmfs/gitversion.svg?branch=main)](https://travis-ci.com/dmfs/gitversion)
-[![codecov](https://codecov.io/gh/dmfs/gitversion/branch/main/graph/badge.svg?token=Nkc6f2B7rO)](https://codecov.io/gh/dmfs/gitversion)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/dmfs/gitversion.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/dmfs/gitversion/context:java)
+# gver
 
 A plugin to take care of versioning your code, so you don't have to.
 
-gitversion provides a domain specific language (DSL) that lets you describe in simple terms how to derive your version numbers from your
+gver provides a domain specific language (DSL) that lets you describe in simple terms how to derive your version numbers from your
 git history. This includes expressions to test the names of affected files and to check the type of referenced issues, allowing you to
 skip a version update when no code or build file was altered or to derive the type of change (feature vs. bugfix) from the implemented/fixed ticket.
 
@@ -21,7 +17,7 @@ considered to be a minor change when the commit message contains either the patt
 `(?i)\b(implement(s|ed)?|close[sd]?) #\d+\b`, and a patch when it contains `(?i)\b(fix(e[sd])?|resolve[sd]?) #\d+\b`.
 
 ```groovy
-gitVersion {
+gver {
     issueTracker GitHub {
         repo = "dmfs/jems" // the name of the GitHub repo that contains the issues for this project
         if (project.hasProperty("GITHUB_API_TOKEN")) {
@@ -78,14 +74,14 @@ version.
 
 ### describing change types
 
-When practising semantic versioning, the most important step is to understand the kind of change (major, minor, bugfix). gitversion provides
+When practising semantic versioning, the most important step is to understand the kind of change (major, minor, bugfix). gver provides
 a DSL to describe how to derive the kind of change based on commit message or referenced issues.
 
 The top level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix change.
 The list of conditions is evaluated top to bottom until the first one matches.
 
 ```groovy
-gitVersion {
+gver {
     changes {
         are major when {
             // condition
@@ -100,7 +96,7 @@ gitVersion {
 
 A change type can appear multiple times in the list if it's to be applied under multiple conditions.
 
-In addition to `major`, `minor`, `patch`, gitversion also knows a `none` type to identify trivial changes that should not result in a new version,
+In addition to `major`, `minor`, `patch`, gver also knows a `none` type to identify trivial changes that should not result in a new version,
 e.g. typo fixes in documentation files.
 
 Note that all conditions inside a change type closure must match in order to apply the change type. If you need to express a logical `or` just
@@ -118,7 +114,7 @@ At present the type of change can be determined from the current branch name or 
 `commitMessage` tests the entire commit message. You'd typically use it with `contains` or `matches`  to test it with a regular expression.
 
 ```groovy
-gitVersion {
+gver {
     changes {
         are major when {
             commitMessage contains(~/#breaking\b/)
@@ -133,7 +129,7 @@ aAnother common pattern is to consider a change a bugfix when it contains one of
 a numeric issue identifier.
 
 ```groovy
-gitVersion {
+gver {
     changes {
         are patch when {
             commitMessage contains("(?i)\\b(fix(e[sd])?|resolve[sd]?) #\\d+\\b")
@@ -154,7 +150,7 @@ The following configuration considers all changes on the main branch as minor ch
 patches.
 
 ```groovy
-gitVersion {
+gver {
     changes {
         are minor when {
             branch matches(~/main/)
@@ -174,7 +170,7 @@ like `anyThat`, `noneThat` or `only`.
 Example:
 
 ```groovy
-gitVersion {
+gver {
     changes {
         are none when {
             affects only(matches(~/.*\.(md|adoc)/)) // only documentation updated, don't generate new version
@@ -186,10 +182,10 @@ gitVersion {
 
 ### Pre-Releases
 
-gitversion can apply different pre-release versions, based on the current head's name, e.g.
+gver can apply different pre-release versions, based on the current head's name, e.g.
 
 ```groovy
-gitVersion {
+gver {
     ...
     preReleases {
         on ~/main/ use { "beta" }
@@ -207,14 +203,14 @@ If the pre-release already ends with a numeric segment, it will be incremented b
 
 ### Suffixes
 
-gitversion can append a suffix to pre-release versions. The suffix is always appended verbatim. This is primarily useful to create
+gver can append a suffix to pre-release versions. The suffix is always appended verbatim. This is primarily useful to create
 `SNAPSHOT` releases.
 Suffixes are specified with `append "<suffix>" when {}` where the closure contains one of the conditions also used in the `changes` DSL.
 
 Examples
 
 ```groovy
-gitversion {
+gver {
     ...
     suffixes {
         append ".${new Date().format("yyyy-MM-dd")}-SNAPSHOT" when {
@@ -230,7 +226,7 @@ Appends a suffix like `2022-12-13-SNAPSHOT` to every pre-release that's not on a
 You can set a suffix unconditionally by omitting `when` and the closure:
 
 ```groovy
-gitversion {
+gver {
     ...
     suffixes {
         append ".${new Date().format("yyyy-MM-dd")}-SNAPSHOT"
@@ -247,7 +243,7 @@ If no suffixes are specified, the suffix `".<timestamp>-SNAPSHOT"` is added to e
 In order to apply the default suffix conditionally you can use the special suffix `DEFAULT` like
 
 ```groovy
-gitversion {
+gver {
     ...
     suffixes {
         append DEFAULT when { branch not(matches(~/main/)) }
@@ -259,7 +255,7 @@ gitversion {
 To disable any suffix use
 
 ```groovy
-gitversion {
+gver {
     ...
     suffixes {
         append ""
@@ -270,7 +266,7 @@ gitversion {
 
 ### Tagging releases
 
-gitversion can tag your current head with the current version or the next release version.
+gver can tag your current head with the current version or the next release version.
 
 The task `gitTag` creates a tag with the current pre-release version. The task `gitTagRelease` creates a tag with the next release version (unless
 the current commit already is a release version)
@@ -278,7 +274,7 @@ the current commit already is a release version)
 To prevent accidental release version tags on non-release branches you can provide a pattern matching your release branch names.
 
 ```groovy
-gitVersion {
+gver {
     ...
     releaseBranchPattern ~/(main|release\/.*)$/
 }
@@ -288,18 +284,18 @@ This will cause the `gitTagRelease` task to fail on any branch not matching that
 
 ## Issue trackers
 
-gitversion can determine the type of change by checking the issues referred to in the commit message. At present, it supports two issue trackers
+gver can determine the type of change by checking the issues referred to in the commit message. At present, it supports two issue trackers
 GitHub and Gitea.
 
 ### GitHub
 
 If your tickets are tracked at GitHub you can determine the type of change from the labels of an issue.
-First you configure gitversion to check issues on GitHub:
+First you configure gver to check issues on GitHub:
 
 ```groovy
-gitVersion {
+gver {
     issueTracker GitHub {
-        repo = "dmfs/gitversion"  // account/repo
+        repo = "dmfs/gver"  // account/repo
         if (project.hasProperty("GITHUB_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
             accessToken = GITHUB_API_TOKEN
         }
@@ -314,7 +310,7 @@ provide an API token, the resulting version may be incorrect. Make sure you alwa
 Now you can specify change types testing the issues.
 
 ```groovy
-gitVersion {
+gver {
     ...
     are minor when {
         commitMessage contains(~/#(?<issue>\d+)\b/) {
@@ -338,10 +334,10 @@ it contains a GitHub issue reference to an issue without the label `enhancement`
 The Gitea DSL is much like the GitHub DSL, you just need to provide the Gitea host name
 
 ```groovy
-gitVersion {
+gver {
     issueTracker Gitea {
         host = "gitea.example.com"
-        repo = "dmfs/gitversion"  // account/repo
+        repo = "dmfs/gver"  // account/repo
         if (project.hasProperty("GITEA_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
             accessToken = GITEA_API_TOKEN
         }

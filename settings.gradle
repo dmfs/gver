@@ -1,4 +1,4 @@
-rootProject.name = 'gitversion'
+rootProject.name = 'gver'
 include 'gradle-plugin'
-include 'gitversion-dsl'
+include 'gver-dsl'
 

@@ -5,7 +5,7 @@ plugins {
 
 gitVersion {
     issueTracker GitHub {
-        repo = "dmfs/gitversion"
+        repo = "dmfs/gver"
         if (project.hasProperty("GITHUB_API_TOKEN")) {
             accessToken = GITHUB_API_TOKEN
         }
