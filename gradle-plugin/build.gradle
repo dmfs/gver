@@ -36,7 +36,7 @@ test {
 gradlePlugin {
     plugins {
         gverPlugin {
-            id = 'org.gver'
+            id = 'org.dmfs.gitversion' // TODO: update with next version
             implementationClass = 'org.dmfs.gradle.gver.GitVersionPlugin'
         }
     }
@@ -51,7 +51,8 @@ pluginBundle {
             // id is captured from java-gradle-plugin configuration
             displayName = 'gver plugin'
             description = 'Gradle versioning based on git history.' +
-                    'This plugin was formerly published with the ID org.dmfs.gitversion.'
+                    'Note, version 0.16.0 is the last version published with the ID org.dmfs.gitversion.' +
+                    'Subsequent versions will be published as org.dmfs.gver.'
             tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
         }
     }
