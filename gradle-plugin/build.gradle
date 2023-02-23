@@ -52,7 +52,7 @@ pluginBundle {
             displayName = 'gver plugin'
             description = 'Gradle versioning based on git history.' +
                     'Note, version 0.16.0 is the last version published with the ID org.dmfs.gitversion.' +
-                    'Subsequent versions will be published as org.gver.'
+                    'Subsequent versions will be published as org.dmfs.gver.'
             tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
         }
     }
