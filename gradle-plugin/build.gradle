@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(":gitversion-dsl")
+    implementation project(":gver-dsl")
     implementation "org.dmfs:semver:0.1.0"
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
     implementation 'org.dmfs:srcless-annotations:0.2.0'
@@ -35,22 +35,24 @@ test {
 
 gradlePlugin {
     plugins {
-        gitVersionPlugin {
-            id = 'org.dmfs.gitversion'
-            implementationClass = 'org.dmfs.gradle.gitversion.GitVersionPlugin'
+        gverPlugin {
+            id = 'org.dmfs.gitversion' // TODO: update with next version
+            implementationClass = 'org.dmfs.gradle.gver.GitVersionPlugin'
         }
     }
 }
 
 pluginBundle {
-    website = 'https://github.com/dmfs/gitversion'
-    vcsUrl = 'https://github.com/dmfs/gitversion'
+    website = 'https://github.com/dmfs/gver'
+    vcsUrl = 'https://github.com/dmfs/gver'
 
     plugins {
-        gitVersionPlugin {
+        gverPlugin {
             // id is captured from java-gradle-plugin configuration
-            displayName = 'GitVersion plugin'
-            description = 'Gradle versioning based on git history.'
+            displayName = 'gver plugin'
+            description = 'Gradle versioning based on git history.' +
+                    'Note, version 0.16.0 is the last version published with the ID org.dmfs.gitversion.' +
+                    'Subsequent versions will be published as org.gver.'
             tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
         }
     }
