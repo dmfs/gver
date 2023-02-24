@@ -1,3 +1,6 @@
+[![Build](https://github.com/dmfs/gver/actions/workflows/main.yml/badge.svg?label=main)](https://github.com/dmfs/gver/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/dmfs/gver/branch/master/graph/badge.svg)](https://codecov.io/gh/dmfs/gver)
+
 # gver
 
 A plugin to take care of versioning your code, so you don't have to.
