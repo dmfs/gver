@@ -13,6 +13,6 @@ class GitVersionPluginTest
     {
         Project project = ProjectBuilder.builder().build();
 
-        project.getPluginManager().apply("org.dmfs.gitversion");
+        project.getPluginManager().apply("org.dmfs.gver");
     }
 }

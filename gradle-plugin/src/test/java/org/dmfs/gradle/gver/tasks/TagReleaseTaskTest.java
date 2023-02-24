@@ -51,7 +51,7 @@ class TagReleaseTaskTest
                             () ->
                             {
                                 Project p = ProjectBuilder.builder().withProjectDir(tempDir).build();
-                                p.getPluginManager().apply("org.dmfs.gitversion");
+                                p.getPluginManager().apply("org.dmfs.gver");
                                 ((GitVersionConfig) p.getExtensions().getByName("gver")).mChangeTypeStrategy = new Strategy();
                                 ((GitVersionConfig) p.getExtensions().getByName("gver")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
                                     asList(
@@ -94,7 +94,7 @@ class TagReleaseTaskTest
                             () ->
                             {
                                 Project p = ProjectBuilder.builder().withProjectDir(tempDir).build();
-                                p.getPluginManager().apply("org.dmfs.gitversion");
+                                p.getPluginManager().apply("org.dmfs.gver");
                                 ((GitVersionConfig) p.getExtensions().getByName("gver")).mChangeTypeStrategy = new Strategy();
                                 ((GitVersionConfig) p.getExtensions().getByName("gver")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
                                     asList(

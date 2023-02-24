@@ -57,7 +57,7 @@ class TagTaskTest
                                             .withProjectDir(tempDir)
                                             .withGradleUserHomeDir(userHome)
                                             .build();
-                                        p.getPluginManager().apply("org.dmfs.gitversion");
+                                        p.getPluginManager().apply("org.dmfs.gver");
                                         ((GitVersionConfig) p.getExtensions().getByName("gver")).mChangeTypeStrategy = new Strategy();
                                         ((GitVersionConfig) p.getExtensions().getByName("gver")).mChangeTypeStrategy.mChangeTypeStrategies.addAll(
                                             asList(
