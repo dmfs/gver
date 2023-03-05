@@ -2,6 +2,7 @@ package org.dmfs.gradle.gver.tasks;
 
 import org.dmfs.gradle.gver.utils.ProjectRepositoryFunction;
 import org.dmfs.gver.dsl.GitVersionConfig;
+import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.optional.First;
 import org.dmfs.semver.Release;
 import org.dmfs.semver.StrictParser;
@@ -15,6 +16,8 @@ import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.IOException;
+
+import static org.eclipse.jgit.lib.Constants.R_TAGS;
 
 
 /**
@@ -39,10 +42,21 @@ public class TagReleaseTask extends DefaultTask
                 throw new IllegalStateException("Not adding a release tag on non-release branch");
             }
 
-            git.tag()
-                .setObjectId(r.parseCommit(head))
-                .setName(new VersionSequence(new Release(new StrictParser().parse(getProject().getVersion().toString()))).toString())
-                .call();
+            String version = new VersionSequence(new Release(new StrictParser().parse(getProject().getVersion().toString()))).toString();
+
+            if (!new First<>(version::equals,
+                new Mapped<>(tag -> tag.getName().startsWith(R_TAGS) ? tag.getName().substring(R_TAGS.length()) : tag.getName(),
+                    git.tagList().call())).isPresent())
+            {
+                git.tag()
+                    .setObjectId(r.parseCommit(head))
+                    .setName(version)
+                    .call();
+            }
+            else
+            {
+                getLogger().lifecycle("Tag {} already exists. Not adding tag.", version);
+            }
         }
     }
 }
