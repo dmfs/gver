@@ -17,10 +17,9 @@ import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
-import static org.dmfs.gver.git.ChangeType.*;
-import static org.dmfs.gradle.gver.utils.Matchers.given;
 import static org.dmfs.gradle.gver.utils.Tools.withRepository;
 import static org.dmfs.gradle.gver.utils.Tools.withTempFolder;
+import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.hamcrest.matchers.LambdaMatcher.having;
 import static org.dmfs.jems2.hamcrest.matchers.procedure.ProcedureMatcher.processes;
 import static org.eclipse.jgit.lib.Constants.R_TAGS;
