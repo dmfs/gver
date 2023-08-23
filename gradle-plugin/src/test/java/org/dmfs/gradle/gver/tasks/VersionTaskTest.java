@@ -1,6 +1,5 @@
 package org.dmfs.gradle.gver.tasks;
 
-import org.dmfs.gradle.gver.utils.Matchers;
 import org.dmfs.gradle.gver.utils.StdOutCaptured;
 import org.dmfs.gver.dsl.GitVersionConfig;
 import org.dmfs.gver.dsl.Strategy;
@@ -14,13 +13,12 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
-import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.gradle.gver.utils.Matchers.given;
 import static org.dmfs.gradle.gver.utils.Tools.withRepository;
 import static org.dmfs.gradle.gver.utils.Tools.withTempFolder;
+import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.hamcrest.matchers.LambdaMatcher.having;
 import static org.dmfs.jems2.hamcrest.matchers.procedure.ProcedureMatcher.processes;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
 
@@ -48,7 +46,7 @@ class VersionTaskTest
                                 tempDir,
                                 "main",
                                 repository ->
-                                    Matchers.given(
+                                    given(
                                         () ->
                                         {
                                             Project p = ProjectBuilder.builder()

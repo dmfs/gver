@@ -1,6 +1,5 @@
 package org.dmfs.gradle.gver.tasks;
 
-import org.dmfs.gradle.gver.utils.Matchers;
 import org.dmfs.gver.dsl.GitVersionConfig;
 import org.dmfs.gver.dsl.Strategy;
 import org.dmfs.gver.git.changetypefacories.condition.CommitMessage;
@@ -17,6 +16,7 @@ import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
+import static org.dmfs.gradle.gver.utils.Matchers.given;
 import static org.dmfs.gradle.gver.utils.Tools.withRepository;
 import static org.dmfs.gradle.gver.utils.Tools.withTempFolder;
 import static org.dmfs.gver.git.ChangeType.*;
@@ -49,7 +49,7 @@ class TagTaskTest
                             tempDir,
                             "main",
                             repository ->
-                                Matchers.given(
+                                given(
                                     () ->
                                     {
                                         Project p = ProjectBuilder.builder()

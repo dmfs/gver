@@ -24,7 +24,7 @@ public final class Tools
 {
     public static <T> Matcher<T> withTestProject(File projectDir, Function<Project, ? extends Matcher<? super T>> delegateFunction)
     {
-        return Matchers.given(() -> {
+        return given(() -> {
                 Git.cloneRepository()
                     .setURI(Tools.class.getClassLoader().getResource("0.2.0.bundle").toString())
                     .setDirectory(projectDir)
@@ -37,7 +37,7 @@ public final class Tools
 
     public static <T> Matcher<T> withRepository(URL src, File dest, String branch, Function<Repository, ? extends Matcher<? super T>> delegateFunction)
     {
-        return Matchers.given(() -> {
+        return given(() -> {
                 Git.cloneRepository()
                     .setURI(src.toString())
                     .setDirectory(dest)
@@ -52,11 +52,8 @@ public final class Tools
 
     public static <T> Matcher<T> withTempFolder(Function<File, ? extends Matcher<? super T>> delegateFunction)
     {
-        return Matchers.given(() ->
-            {
-                File createdFolder = Files.createTempDirectory("testFolder").toFile();
-                return createdFolder;
-            },
+        return given(() ->
+                Files.createTempDirectory("testFolder").toFile(),
             delegateFunction,
             Tools::delete
         );
