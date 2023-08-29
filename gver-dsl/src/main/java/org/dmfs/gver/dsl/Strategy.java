@@ -32,6 +32,7 @@ public class Strategy
     public ConditionConsumer are(ChangeType changeType)
     {
         return condition -> {
+
             Conditions conditions = new Conditions();
             condition.setResolveStrategy(Closure.DELEGATE_FIRST);
             condition.setDelegate(conditions);
@@ -46,5 +47,14 @@ public class Strategy
     {
         mChangeTypeStrategies.add(changeType.when(((repository, commit, branches) -> true)));
     }
+
+
+    public void follow(Closure strategy)
+    {
+        strategy.setResolveStrategy(Closure.DELEGATE_FIRST);
+        strategy.setDelegate(this);
+        strategy.call();
+    }
+
 
 }

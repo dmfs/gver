@@ -127,9 +127,41 @@ add describe the same change type with the other condition underneath the first 
 The `otherwise` statement should be last in the list as it catches all cases that didn't match any of the other conditions. The default is to
 increase any pre-release version or create a new minor pre-release if no pre-release version is present yet.
 
+### using conventions
+
+There are a couple of existing conventions for semantic commit messages.
+At present, gver supports applying [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) using the
+`follow` expression like so
+
+```groovy
+gver {
+    changes {
+        follow conventionalCommits
+    }
+}
+```
+
+You can still add rules with higher or lower priority, for instance:
+
+```groovy
+gver {
+    changes {
+        are major when { commitTitle contains(~/💥/) }
+        are minor when { commitTitle contains(~/🎀/) }
+        are patch when { commitTitle contains(~/🩹/) }
+        follow conventionalCommits
+        otherwise none
+    }
+}
+```
+
+There are two flavours `strictConventionalCommits` and `conventionalCommits`. The latter falls though and applies
+the next or default change rules if a commit doesn't conform to conventional commits, whereas the former will fail and
+break the build when a commit doesn't conform to the convention.
+
 ### conditions
 
-At present the type of change can be determined from the current branch name or the commit history up to the last tagged version.
+At present, the type of change can be determined from the current branch name or the commit history up to the last tagged version.
 
 #### `commitMessage`
 
