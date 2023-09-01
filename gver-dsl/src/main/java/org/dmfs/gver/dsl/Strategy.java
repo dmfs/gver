@@ -1,12 +1,11 @@
 package org.dmfs.gver.dsl;
 
+import groovy.lang.Closure;
 import org.dmfs.gver.git.ChangeType;
 import org.dmfs.gver.git.ChangeTypeStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import groovy.lang.Closure;
 
 
 public class Strategy
@@ -16,6 +15,7 @@ public class Strategy
     public final static ChangeType minor = ChangeType.MINOR;
     public final static ChangeType patch = ChangeType.PATCH;
     public final static ChangeType none = ChangeType.NONE;
+    public final static ChangeType invalid = ChangeType.INVALID;
 
 
     public ConditionConsumer are(ChangeType changeType)

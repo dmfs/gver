@@ -7,6 +7,9 @@ import org.dmfs.semver.*;
 
 public enum ChangeType implements BiFunction<Version, String, Version>
 {
+    INVALID((version, preRelease) -> {
+        throw new IllegalArgumentException("Invalid change after version " + new VersionSequence(version));
+    }),
     UNKNOWN(NextPreRelease::new),
     NONE((version, preRelease) -> version), // same version
     PATCH(PatchPreRelease::new),

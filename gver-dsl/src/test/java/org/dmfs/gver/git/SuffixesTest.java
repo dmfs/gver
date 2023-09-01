@@ -7,8 +7,6 @@ import org.dmfs.gver.git.changetypefacories.FirstOf;
 import org.dmfs.gver.git.changetypefacories.condition.CommitMessage;
 import org.dmfs.gver.git.predicates.Contains;
 import org.dmfs.rfc5545.DateTime;
-import org.dmfs.semver.Version;
-import org.dmfs.semver.VersionSequence;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.saynotobugs.confidence.junit5.engine.Assertion;
@@ -22,7 +20,7 @@ import java.net.URL;
 import static org.dmfs.jems2.confidence.Jems2.maps;
 import static org.dmfs.jems2.confidence.Jems2.present;
 import static org.dmfs.jems2.mockito.Mock.mock;
-import static org.dmfs.semver.confidence.SemVer.preRelease;
+import static org.dmfs.semver.confidence.SemVer.*;
 import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.*;
 import static org.saynotobugs.confidence.quality.Core.*;
 
@@ -71,16 +69,17 @@ class SuffixesTest
             },
             r -> assertionThat(new GitVersion(mStrategy, new Suffixes(), ignored -> "alpha"),
                 maps(repo, to(
-                    has(
-                        (Version v) -> new VersionSequence(new WithoutBuildMeta(v)).toString(),
-                        allOf(
-                            matchesPattern("0\\.1\\.0-alpha.1\\.20\\d{6}T\\d{6}Z-SNAPSHOT"),
-                            has((String version) -> version.substring(14, 30),
-                                has((String s) -> DateTime.parse(s),
+                    versionThat(
+                        hasMajor(0),
+                        hasMinor(1),
+                        hasPatch(0),
+                        hasPreRelease(
+                            has("timestamp", (String version) -> version.substring(8, 24),
+                                has(DateTime::parse,
                                     has(DateTime::getTimestamp,
                                         has(Number::doubleValue,
-                                            closeTo(System.currentTimeMillis(), 1000d)))))))
-                )))));
+                                            closeTo(System.currentTimeMillis(), 1000d))))))))
+                ))));
 
 
     Assertion test_suffixes_with_simple_config =
