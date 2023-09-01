@@ -102,7 +102,24 @@ A change type can appear multiple times in the list if it's to be applied under 
 In addition to `major`, `minor`, `patch`, gver also knows a `none` type to identify trivial changes that should not result in a new version,
 e.g. typo fixes in documentation files.
 
-Note that all conditions inside a change type closure must match in order to apply the change type. If you need to express a logical `or` just
+The `invalid` change type can be used to validate commits. As soon as the project version is determined this will
+throw an exception if the condition is fulfilled and the build will fail.
+
+Example:
+
+```groovy
+gver {
+    changes {
+        are invalid when {
+            // enforce messages compliant to conventionalcommits.org
+            commitTitle not(matches(~/^[a-z]+(\([^)]+\))?!?: .*/))
+        }
+    }
+}
+```
+
+Note that all conditions inside a change type closure must match in order to apply the change type. If you need to
+express a logical `or` just
 add describe the same change type with the other condition underneath the first one.
 
 The `otherwise` statement should be last in the list as it catches all cases that didn't match any of the other conditions. The default is to

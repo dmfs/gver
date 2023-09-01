@@ -1,17 +1,13 @@
 package org.dmfs.gver.dsl.git;
 
 import com.google.common.io.Files;
-
-import org.dmfs.gver.git.ChangeTypeStrategy;
-import org.dmfs.gver.git.GitVersion;
-import org.dmfs.gver.git.Suffixes;
-import org.dmfs.gver.git.WithoutBuildMeta;
-import org.dmfs.gver.git.changetypefacories.FirstOf;
-import org.dmfs.gver.git.changetypefacories.condition.CommitMessage;
-import org.dmfs.gver.git.predicates.Contains;
-import org.dmfs.gver.git.changetypefacories.condition.Affects;
+import org.dmfs.gver.dsl.utils.Repository;
 import org.dmfs.gver.dsl.utils.Tools;
 import org.dmfs.gver.git.*;
+import org.dmfs.gver.git.changetypefacories.FirstOf;
+import org.dmfs.gver.git.changetypefacories.condition.Affects;
+import org.dmfs.gver.git.changetypefacories.condition.CommitMessage;
+import org.dmfs.gver.git.predicates.Contains;
 import org.dmfs.jems2.single.Unchecked;
 import org.dmfs.semver.VersionSequence;
 import org.eclipse.jgit.api.Git;
@@ -19,6 +15,10 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.saynotobugs.confidence.junit5.engine.Assertion;
+import org.saynotobugs.confidence.junit5.engine.Confidence;
+import org.saynotobugs.confidence.junit5.engine.assertion.WithResource;
+import org.saynotobugs.confidence.junit5.engine.resource.TempDir;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -26,10 +26,12 @@ import java.nio.charset.Charset;
 import static org.dmfs.gver.dsl.utils.Matchers.given;
 import static org.dmfs.jems2.hamcrest.matchers.LambdaMatcher.having;
 import static org.dmfs.jems2.hamcrest.matchers.function.FragileFunctionMatcher.associates;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.*;
+import static org.saynotobugs.confidence.quality.Core.*;
 
 
+@Confidence
 class GitVersionTest
 {
     ChangeTypeStrategy mStrategy = new FirstOf(
@@ -201,5 +203,44 @@ class GitVersionTest
                                         equalTo(version))
                                 )))));
     }
+
+
+    Assertion illegal_commit_fails = withResources("",
+        new TempDir(),
+        new Repository(getClass().getClassLoader().getResource("0.1.0-alpha.bundle"), "main"),
+
+        // TODO: replace with initialized resource see https://github.com/saynotobugsorg/confidence/issues/70
+        (tempDir, repo) -> withResource(() -> {
+                new File(tempDir, "newFile").createNewFile();
+                Git git = new Git(repo);
+                git.add().addFilepattern("newFile").call();
+                git.commit().setMessage("commit #invalid").call();
+
+                return new WithResource.Resource<org.eclipse.jgit.lib.Repository>()
+                {
+                    @Override
+                    public void close()
+                    {
+                        repo.close();
+                    }
+
+                    @Override
+                    public org.eclipse.jgit.lib.Repository value()
+                    {
+
+                        return repo;
+                    }
+                };
+            },
+            r -> assertionThat(new GitVersion(new FirstOf(
+                    ChangeType.INVALID.when(new CommitMessage(new Contains("#invalid"))),
+                    ChangeType.MAJOR.when(new CommitMessage(new Contains("#major"))),
+                    ChangeType.MINOR.when(new CommitMessage(new Contains("#minor"))),
+                    ChangeType.PATCH.when(new CommitMessage(new Contains("#patch"))),
+                    ChangeType.NONE.when(new CommitMessage(new Contains("#trivial"))),
+                    ChangeType.UNKNOWN.when(((treeWalk, commit, branches) -> true))),
+                    new Suffixes(), ignored -> "alpha"),
+                has("version", v -> () -> v.value(repo), is(throwing(IllegalArgumentException.class))))));
+
 
 }
