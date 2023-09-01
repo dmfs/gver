@@ -7,16 +7,27 @@ import org.dmfs.gver.git.ChangeTypeStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+
 
 public class Strategy
 {
-    public final List<ChangeTypeStrategy> mChangeTypeStrategies = new ArrayList<>();
+    public final List<ChangeTypeStrategy> mChangeTypeStrategies;
     public final static ChangeType major = ChangeType.MAJOR;
     public final static ChangeType minor = ChangeType.MINOR;
     public final static ChangeType patch = ChangeType.PATCH;
     public final static ChangeType none = ChangeType.NONE;
     public final static ChangeType invalid = ChangeType.INVALID;
 
+    public Strategy()
+    {
+        this(new ChangeTypeStrategy[0]);
+    }
+
+    public Strategy(ChangeTypeStrategy... strategies)
+    {
+        mChangeTypeStrategies = new ArrayList<>(asList(strategies));
+    }
 
     public ConditionConsumer are(ChangeType changeType)
     {
