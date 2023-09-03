@@ -30,7 +30,7 @@ dependencies {
     implementation "org.dmfs:rfc5545-datetime:0.3"
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
     implementation 'org.dmfs:srcless-annotations:0.3.0'
-    implementation "org.dmfs:jems2:2.18.0"
+    implementation "org.dmfs:jems2:2.19.0"
 
     testAnnotationProcessor 'org.dmfs:srcless-processors:0.3.0'
 
@@ -38,8 +38,8 @@ dependencies {
     testImplementation "org.dmfs:semver-confidence:0.2.0"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
-    testImplementation "org.dmfs:jems2-testing:2.18.0"
-    testImplementation "org.dmfs:jems2-confidence:2.18.0"
+    testImplementation "org.dmfs:jems2-testing:2.19.0"
+    testImplementation "org.dmfs:jems2-confidence:2.19.0"
     testImplementation "org.hamcrest:hamcrest:2.2"
     testImplementation "org.saynotobugs:confidence-core:0.22.3"
     testImplementation "org.saynotobugs:confidence-incubator:0.22.3"
