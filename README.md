@@ -1,5 +1,7 @@
-[![Build](https://github.com/dmfs/gver/actions/workflows/main.yml/badge.svg?label=main)](https://github.com/dmfs/gver/actions/workflows/main.yml)
-[![codecov](https://codecov.io/gh/dmfs/gver/branch/main/graph/badge.svg)](https://codecov.io/gh/dmfs/gver)
+[![Build](https://github.com/dmfs/gver/actions/workflows/main.yml/badge.svg?label=main)](https://github.com/dmfs/gver/actions/workflows/main.yml)  
+[![codecov](https://codecov.io/gh/dmfs/gver/branch/main/graph/badge.svg)](https://codecov.io/gh/dmfs/gver)  
+[![Confidence](https://img.shields.io/badge/Tested_with-Confidence-800000?labelColor=white)](https://saynotobugs.org/confidence)
+
 
 # gver
 
