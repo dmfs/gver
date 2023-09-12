@@ -1,5 +1,8 @@
 package org.dmfs.gver.dsl;
 
+import groovy.lang.Closure;
+import org.dmfs.gver.dsl.conventions.ConventionalCommits;
+import org.dmfs.gver.dsl.conventions.StrictConventionalCommits;
 import org.dmfs.gver.dsl.issuetracker.GitHub;
 import org.dmfs.gver.dsl.issuetracker.Gitea;
 import org.dmfs.gver.git.Suffixes;
@@ -8,8 +11,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import groovy.lang.Closure;
 
 
 public class GitVersionConfig
@@ -24,6 +25,9 @@ public class GitVersionConfig
 
     public Suffixes mSuffixes = new Suffixes();
 
+    // TODO: find a better way to provide these, this approach doesn't scale well
+    public Closure conventionalCommits = new ConventionalCommits(this);
+    public Closure strictConventionalCommits = new StrictConventionalCommits(this);
 
     public void setIssueTracker(IssueTracker issueTracker)
     {
@@ -63,7 +67,6 @@ public class GitVersionConfig
         closure.setDelegate(mChangeTypeStrategy);
         closure.call();
     }
-
 
     public Predicate<String> contains(Pattern pattern, Closure<Predicate<Matcher>> delegate)
     {
