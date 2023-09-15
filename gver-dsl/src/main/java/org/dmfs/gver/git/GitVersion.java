@@ -2,12 +2,16 @@ package org.dmfs.gver.git;
 
 import org.dmfs.jems2.FragileFunction;
 import org.dmfs.jems2.Function;
+import org.dmfs.jems2.Pair;
+import org.dmfs.jems2.Single;
 import org.dmfs.jems2.comparator.Reverse;
 import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.iterable.Seq;
 import org.dmfs.jems2.iterable.Sorted;
 import org.dmfs.jems2.optional.*;
+import org.dmfs.jems2.pair.ValuePair;
 import org.dmfs.jems2.single.Backed;
+import org.dmfs.jems2.single.Reduced;
 import org.dmfs.jems2.single.Unchecked;
 import org.dmfs.semver.*;
 import org.dmfs.semver.comparators.VersionComparator;
@@ -22,6 +26,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import static org.eclipse.jgit.lib.Constants.R_TAGS;
@@ -77,14 +82,24 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
 
     private Version readVersion(Repository repository, RevWalk revWalk, RevCommit commit, Map<ObjectId, Version> tags, String preRelease)
     {
+        RevCommit[] parents = parsed(revWalk, commit).getParents();
         return new Backed<>(
             new FirstPresent<>(
                 new MapEntry<>(tags, commit.getId()),
+                new Restrained<>(() -> parents.length == 1,
+                    new org.dmfs.jems2.optional.Mapped<>(
+                        history -> new Reduced<>(
+                            () -> readVersion(repository, revWalk, history.right(), tags, preRelease),
+                            (version, nextCommit) -> mStrategy.changeType(repository, nextCommit, new Unchecked<>(repository::getBranch).value())
+                                .value(version, preRelease),
+                            history.left()).value(),
+                        new Just<>(linearHistory(revWalk, commit, tags)))
+                ),
                 new First<>(
                     new Sorted<>(new Reverse<>(new VersionComparator()),
                         new Mapped<>(v -> mStrategy.changeType(repository, commit, new Unchecked<>(repository::getBranch).value()).value(v, preRelease),
                             new Mapped<>(commit1 -> readVersion(repository, revWalk, commit1, tags, preRelease),
-                                new Seq<>(parsed(revWalk, commit).getParents())))))),
+                                new Seq<>(parents)))))),
             () -> new PatchPreRelease(new Release(0, 0, 0), preRelease)).value();
     }
 
@@ -99,6 +114,19 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
         {
             throw new RuntimeException("Can't parse commit", e);
         }
+    }
+
+    private Single<Pair<Iterable<RevCommit>, RevCommit>> linearHistory(RevWalk revWalk, RevCommit commit, Map<ObjectId, Version> tags)
+    {
+        LinkedList<RevCommit> history = new LinkedList<>();
+        RevCommit c = parsed(revWalk, commit);
+        while (c.getParents().length == 1 && !tags.containsKey(c.toObjectId()))
+        {
+            history.addFirst(c);
+            c = parsed(revWalk, c.getParent(0));
+        }
+        RevCommit finalC = c;
+        return () -> new ValuePair<>(history, finalC);
     }
 
 
