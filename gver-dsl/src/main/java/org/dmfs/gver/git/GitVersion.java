@@ -100,7 +100,7 @@ public final class GitVersion implements FragileFunction<Repository, Version, Ex
                         new Mapped<>(v -> mStrategy.changeType(repository, commit, new Unchecked<>(repository::getBranch).value()).value(v, preRelease),
                             new Mapped<>(commit1 -> readVersion(repository, revWalk, commit1, tags, preRelease),
                                 new Seq<>(parents)))))),
-            () -> new PatchPreRelease(new Release(0, 0, 0), preRelease)).value();
+            () -> new MinorPreRelease(new Release(0, 0, 0), preRelease)).value();
     }
 
 
