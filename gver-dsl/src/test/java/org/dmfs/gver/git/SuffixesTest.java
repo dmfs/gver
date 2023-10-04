@@ -11,7 +11,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.saynotobugs.confidence.junit5.engine.Assertion;
 import org.saynotobugs.confidence.junit5.engine.Confidence;
-import org.saynotobugs.confidence.junit5.engine.assertion.WithResource;
 import org.saynotobugs.confidence.junit5.engine.resource.TempDir;
 
 import java.io.File;
@@ -38,36 +37,21 @@ class SuffixesTest
         ChangeType.UNKNOWN.when(((treeWalk, commit, branches) -> true))
     );
 
-    Assertion default_strategy_on_clean_repo = withResources("", new TempDir(), new Repository(repo, "main"),
+    Assertion default_strategy_on_clean_repo = withResource(new TempDir(),
+        dir -> withResource(new Repository(repo, "main", dir),
+            repo -> assertionThat(
+                new GitVersion(mStrategy, new Suffixes(), ignored -> "alpha"),
+                maps(repo, to(preRelease(0, 1, 0, "alpha.20220116T191427Z-SNAPSHOT"))))));
 
-        (tempDir, repo) -> assertionThat(
-            new GitVersion(mStrategy, new Suffixes(), ignored -> "alpha"),
-            maps(repo, to(preRelease(0, 1, 0, "alpha.20220116T191427Z-SNAPSHOT")))));
 
+    Assertion default_strategy_on_dirty_repo = withResource(new TempDir(),
+        tempDir -> withResource(initialized(repo -> {
+                    new File(tempDir, "dirty").createNewFile();
+                    new Git(repo).add().addFilepattern("dirty").call();
+                },
+                new Repository(repo, "main", tempDir)),
 
-    Assertion default_strategy_on_dirty_repo = withResources("", new TempDir(), new Repository(repo, "main"),
-
-        // TODO: replace with initialized resource
-        (tempDir, repo) -> withResource(() -> {
-                new File(tempDir, "dirty").createNewFile();
-                new Git(repo).add().addFilepattern("dirty").call();
-                return new WithResource.Resource<org.eclipse.jgit.lib.Repository>()
-                {
-                    @Override
-                    public void close()
-                    {
-                        repo.close();
-                    }
-
-                    @Override
-                    public org.eclipse.jgit.lib.Repository value()
-                    {
-
-                        return repo;
-                    }
-                };
-            },
-            r -> assertionThat(new GitVersion(mStrategy, new Suffixes(), ignored -> "alpha"),
+            repo -> assertionThat(new GitVersion(mStrategy, new Suffixes(), ignored -> "alpha"),
                 maps(repo, to(
                     versionThat(
                         hasMajor(0),

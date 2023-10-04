@@ -1,6 +1,6 @@
 package org.dmfs.gver.dsl.utils;
 
-import org.dmfs.jems2.FragileFunction;
+import org.dmfs.jems2.Fragile;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.saynotobugs.confidence.junit5.engine.assertion.WithResource;
@@ -9,28 +9,30 @@ import java.io.File;
 import java.net.URL;
 
 
-public final class Repository implements FragileFunction<File, WithResource.Resource<org.eclipse.jgit.lib.Repository>, Exception>
+public final class Repository implements Fragile<WithResource.Resource<org.eclipse.jgit.lib.Repository>, Exception>
 {
     private final URL mSource;
     private final String mBranch;
+    private final File mDir;
 
 
-    public Repository(URL source, String branch)
+    public Repository(URL source, String branch, File dir)
     {
         mSource = source;
         mBranch = branch;
+        mDir = dir;
     }
 
 
     @Override
-    public WithResource.Resource<org.eclipse.jgit.lib.Repository> value(File directory) throws Exception
+    public WithResource.Resource<org.eclipse.jgit.lib.Repository> value() throws Exception
     {
         Git.cloneRepository()
             .setURI(mSource.toString())
-            .setDirectory(directory)
+            .setDirectory(mDir)
             .setBranch(mBranch)
             .call();
-        org.eclipse.jgit.lib.Repository repository = new FileRepositoryBuilder().setWorkTree(directory).build();
+        org.eclipse.jgit.lib.Repository repository = new FileRepositoryBuilder().setWorkTree(mDir).build();
 
         return new WithResource.Resource<org.eclipse.jgit.lib.Repository>()
         {
