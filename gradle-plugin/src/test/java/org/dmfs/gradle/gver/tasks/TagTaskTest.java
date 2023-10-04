@@ -57,46 +57,32 @@ class TagTaskTest
 
 
     Assertion gitTagRelease_fails_on_dirty_repo =
-        withResources("with temporary directory and git repository",
+        withResource("with temporary directory and git repository",
             new TempDir(),
-            new Repository(getClass().getClassLoader().getResource("0.0.2-alpha.1.bundle"), "main"),
-            // we use a separate gradle home dir to make this test pass
-            (tempDir, repo) -> withResources("temporary user home dir and project",
-                new TempDir(),
-                (FragileFunction<File, WithResource.Resource<Project>, Exception>) new TestProject(tempDir,
-                    new Strategy(
-                        MAJOR.when(new CommitMessage(new Contains("#major"))),
-                        MINOR.when(new CommitMessage(new Contains("#minor"))),
-                        PATCH.when(new CommitMessage(new Contains("#patch"))),
-                        UNKNOWN.when(((repository1, commit, branches) -> true)))),
+            tempDir -> withResource(initialized(repo -> {
+                        new File(tempDir, "newfile").createNewFile();
+                        new Git(repo).add().addFilepattern("newfile").call();
+                    },
+                    () -> new Repository(getClass().getClassLoader().getResource("0.0.2-alpha.1.bundle"), "main").value(tempDir)),
 
-                (userHome, project) ->
-                    withResource(() -> {
-                            new File(tempDir, "newfile").createNewFile();
-                            new Git(repo).add().addFilepattern("newfile").call();
-                            return new WithResource.Resource<org.eclipse.jgit.lib.Repository>()
-                            {
-                                @Override
-                                public void close()
-                                {
-                                    // nothing to do here, this will be closed by the outer resource
-                                }
+                // we use a separate gradle home dir to make this test pass
+                repo -> withResources("temporary user home dir and project",
+                    new TempDir(),
+                    (FragileFunction<File, WithResource.Resource<Project>, Exception>) new TestProject(tempDir,
+                        new Strategy(
+                            MAJOR.when(new CommitMessage(new Contains("#major"))),
+                            MINOR.when(new CommitMessage(new Contains("#minor"))),
+                            PATCH.when(new CommitMessage(new Contains("#patch"))),
+                            UNKNOWN.when(((repository1, commit, branches) -> true)))),
 
-                                @Override
-                                public org.eclipse.jgit.lib.Repository value()
-                                {
-                                    return repo;
-                                }
-                            };
-                        },
-                        innerRepo ->
-                            assertionThat(repository -> ((TagTask) project.getTasks().getByName("gitTag")).perform(),
-                                is(procedureThatAffects(
-                                    new Text("alters repository"),
-                                    () -> repo,
-                                    soIt(has(repository -> new Mapped<>(Ref::getName, new Git(repository).tagList().call()),
-                                        // same tags as before
-                                        iteratesInAnyOrder(R_TAGS + "0.0.1"))),
-                                    when(throwing(GradleException.class))))))));
+                    (userHome, project) ->
+                        assertionThat(repository -> ((TagTask) project.getTasks().getByName("gitTag")).perform(),
+                            is(procedureThatAffects(
+                                new Text("alters repository"),
+                                () -> repo,
+                                soIt(has(repository -> new Mapped<>(Ref::getName, new Git(repository).tagList().call()),
+                                    // same tags as before
+                                    iteratesInAnyOrder(R_TAGS + "0.0.1"))),
+                                when(throwing(GradleException.class))))))));
 
 }

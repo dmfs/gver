@@ -17,7 +17,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.saynotobugs.confidence.junit5.engine.Assertion;
 import org.saynotobugs.confidence.junit5.engine.Confidence;
-import org.saynotobugs.confidence.junit5.engine.assertion.WithResource;
 import org.saynotobugs.confidence.junit5.engine.resource.TempDir;
 
 import java.io.File;
@@ -205,34 +204,19 @@ class GitVersionTest
     }
 
 
-    Assertion illegal_commit_fails = withResources("",
+    Assertion illegal_commit_fails = withResource(
         new TempDir(),
-        new Repository(getClass().getClassLoader().getResource("0.1.0-alpha.bundle"), "main"),
 
-        // TODO: replace with initialized resource see https://github.com/saynotobugsorg/confidence/issues/70
-        (tempDir, repo) -> withResource(() -> {
-                new File(tempDir, "newFile").createNewFile();
-                Git git = new Git(repo);
-                git.add().addFilepattern("newFile").call();
-                git.commit().setMessage("commit #invalid").call();
-
-                return new WithResource.Resource<org.eclipse.jgit.lib.Repository>()
+        tempDir -> withResource(initialized(repo ->
                 {
-                    @Override
-                    public void close()
-                    {
-                        repo.close();
-                    }
+                    new File(tempDir, "newFile").createNewFile();
+                    Git git = new Git(repo);
+                    git.add().addFilepattern("newFile").call();
+                    git.commit().setMessage("commit #invalid").call();
+                },
+                new Repository(getClass().getClassLoader().getResource("0.1.0-alpha.bundle"), "main", tempDir)),
 
-                    @Override
-                    public org.eclipse.jgit.lib.Repository value()
-                    {
-
-                        return repo;
-                    }
-                };
-            },
-            r -> assertionThat(new GitVersion(new FirstOf(
+            repo -> assertionThat(new GitVersion(new FirstOf(
                     ChangeType.INVALID.when(new CommitMessage(new Contains("#invalid"))),
                     ChangeType.MAJOR.when(new CommitMessage(new Contains("#major"))),
                     ChangeType.MINOR.when(new CommitMessage(new Contains("#minor"))),
