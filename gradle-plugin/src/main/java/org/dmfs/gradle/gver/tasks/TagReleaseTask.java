@@ -26,6 +26,12 @@ import static org.eclipse.jgit.lib.Constants.R_TAGS;
  */
 public class TagReleaseTask extends DefaultTask
 {
+    public TagReleaseTask()
+    {
+        setGroup("gver");
+        setDescription("Tags the HEAD commit with a new release version.");
+    }
+
     @TaskAction
     public void perform() throws IOException, GitAPIException
     {

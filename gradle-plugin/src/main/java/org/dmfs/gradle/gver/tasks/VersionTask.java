@@ -10,14 +10,11 @@ import org.gradle.api.tasks.TaskAction;
  */
 public class VersionTask extends DefaultTask
 {
-
     public VersionTask()
     {
-        // TODO: is there a better place/way to set these?
         setGroup("gver");
-        setDescription("show the current project version");
+        setDescription("Shows the current project version.");
     }
-
 
     @TaskAction
     public void perform()
