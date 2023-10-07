@@ -15,21 +15,19 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 
-import static org.dmfs.gver.dsl.utils.Matchers.given;
-
 
 public final class Tools
 {
     public static <T> Matcher<T> withRepository(URL src, File dest, String branch, Function<Repository, ? extends Matcher<? super T>> delegateFunction)
     {
-        return given(() -> {
-                Git.cloneRepository()
-                    .setURI(src.toString())
-                    .setDirectory(dest)
-                    .setBranch(branch)
-                    .call();
-                return new FileRepositoryBuilder().setWorkTree(dest).build();
-            },
+        return new Given<>(() -> {
+            Git.cloneRepository()
+                .setURI(src.toString())
+                .setDirectory(dest)
+                .setBranch(branch)
+                .call();
+            return new FileRepositoryBuilder().setWorkTree(dest).build();
+        },
             delegateFunction,
             Repository::close);
     }
@@ -37,11 +35,11 @@ public final class Tools
 
     public static <T> Matcher<T> withTempFolder(Function<File, ? extends Matcher<? super T>> delegateFunction)
     {
-        return given(() ->
-            {
-                File createdFolder = Files.createTempDirectory("testFolder").toFile();
-                return createdFolder;
-            },
+        return new Given<>(() ->
+        {
+            File createdFolder = Files.createTempDirectory("testFolder").toFile();
+            return createdFolder;
+        },
             delegateFunction,
             Tools::delete
         );

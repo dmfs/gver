@@ -3,68 +3,44 @@ package org.dmfs.gradle.gver.utils;
 import org.dmfs.gver.dsl.GitVersionConfig;
 import org.dmfs.gver.dsl.Strategy;
 import org.dmfs.gver.git.Suffixes;
-import org.dmfs.jems2.Fragile;
-import org.dmfs.jems2.FragileFunction;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.saynotobugs.confidence.junit5.engine.assertion.WithResource;
+import org.saynotobugs.confidence.junit5.engine.Resource;
+import org.saynotobugs.confidence.junit5.engine.ResourceComposition;
+import org.saynotobugs.confidence.junit5.engine.resource.LazyResource;
 
 import java.io.File;
 
 
-public final class TestProject implements Fragile<WithResource.Resource<Project>, Exception>,
-    FragileFunction<File, WithResource.Resource<Project>, Exception>
+public final class TestProject extends ResourceComposition<Project>
 {
-    private final File mProjectDir;
-    private final Strategy mStrategy;
-    private final Suffixes mSuffixes;
-
-    public TestProject(File projectDir, Strategy strategy)
+    public TestProject(Resource<File> projectDir, Strategy strategy, Resource<File> homeDir)
     {
-        this(projectDir, strategy, new Suffixes());
+        this(projectDir, strategy, new Suffixes(), homeDir);
     }
 
-    public TestProject(File projectDir, Strategy strategy, Suffixes suffixes)
+    public TestProject(Resource<File> projectDir, Strategy strategy)
     {
-        mProjectDir = projectDir;
-        mStrategy = strategy;
-        mSuffixes = suffixes;
+        this(projectDir, strategy, new Suffixes(), projectDir);
     }
 
-
-    @Override
-    public WithResource.Resource<Project> value() throws Exception
+    public TestProject(Resource<File> projectDir, Strategy strategy, Suffixes suffixes, Resource<File> homeDir)
     {
-        return value(mProjectDir);
-    }
-
-    @Override
-    public WithResource.Resource<Project> value(File file) throws Exception
-    {
-        Project project = ProjectBuilder.builder()
-            .withProjectDir(mProjectDir)
-            .withGradleUserHomeDir(file)
-            .build();
-        project.getPluginManager().apply("org.dmfs.gver");
-        ((GitVersionConfig) project.getExtensions().getByName("gver")).mChangeTypeStrategy = mStrategy;
-        ((GitVersionConfig) project.getExtensions().getByName("gver")).mSuffixes = mSuffixes;
-
-
-        return new WithResource.Resource<Project>()
-        {
-            @Override
-            public void close()
-            {
-                /* nothing to do */
-            }
-
-
-            @Override
-            public Project value()
-            {
+        // TODO, this should be a Resource derived from two values
+        super(new LazyResource<>(
+            () -> {
+                Project project = ProjectBuilder.builder()
+                    .withProjectDir(projectDir.value())
+                    .withGradleUserHomeDir(homeDir.value())
+                    .build();
+                project.getPluginManager().apply("org.dmfs.gver");
+                ((GitVersionConfig) project.getExtensions().getByName("gver")).mChangeTypeStrategy = strategy;
+                ((GitVersionConfig) project.getExtensions().getByName("gver")).mSuffixes = suffixes;
                 return project;
-            }
-
-        };
+            },
+            project -> {
+                projectDir.close();
+                homeDir.close();
+            }));
     }
 }

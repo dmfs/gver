@@ -3,7 +3,6 @@ package org.dmfs.gver.dsl.utils;
 import org.dmfs.jems2.Fragile;
 import org.dmfs.jems2.Function;
 import org.dmfs.jems2.Procedure;
-import org.dmfs.srcless.annotations.staticfactory.StaticFactories;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -12,7 +11,6 @@ import java.io.Closeable;
 import java.io.IOException;
 
 
-@StaticFactories("Matchers")
 public final class Given<T, E> extends TypeSafeDiagnosingMatcher<T>
 {
     private final Fragile<? extends E, Exception> mEnvGenerator;
