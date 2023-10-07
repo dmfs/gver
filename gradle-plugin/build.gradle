@@ -1,6 +1,6 @@
 plugins {
     id 'java-gradle-plugin'
-    id "com.gradle.plugin-publish" version "0.19.0"
+    id "com.gradle.plugin-publish" version "1.2.1"
     id 'maven-publish' // required to generate correct meta data
 }
 
@@ -46,7 +46,7 @@ gradlePlugin {
     }
 }
 
-pluginBundle {
+gradlePlugin {
     website = 'https://github.com/dmfs/gver'
     vcsUrl = 'https://github.com/dmfs/gver'
 
