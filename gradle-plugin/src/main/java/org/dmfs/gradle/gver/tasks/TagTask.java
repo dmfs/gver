@@ -17,6 +17,12 @@ import java.io.IOException;
  */
 public class TagTask extends DefaultTask
 {
+    public TagTask()
+    {
+        setGroup("gver");
+        setDescription("Tags the HEAD commit with the current project version.");
+    }
+
     @TaskAction
     public void perform() throws IOException, GitAPIException
     {
