@@ -4,12 +4,12 @@ if (project.hasProperty('SONATYPE_USERNAME') && project.hasProperty('SONATYPE_PA
     apply plugin: 'signing'
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
+        archiveClassifier = 'javadoc'
         from javadoc.destinationDir
     }
 
     task sourceJar(type: Jar) {
-        classifier "sources"
+        archiveClassifier = "sources"
         from sourceSets.main.allJava
     }
 
