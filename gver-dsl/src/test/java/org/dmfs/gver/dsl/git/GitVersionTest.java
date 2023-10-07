@@ -1,7 +1,8 @@
 package org.dmfs.gver.dsl.git;
 
 import com.google.common.io.Files;
-import org.dmfs.gver.dsl.utils.Repository;
+import org.dmfs.gver.dsl.utils.Given;
+import org.dmfs.gver.dsl.utils.Repo;
 import org.dmfs.gver.dsl.utils.Tools;
 import org.dmfs.gver.git.*;
 import org.dmfs.gver.git.changetypefacories.FirstOf;
@@ -17,16 +18,18 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.saynotobugs.confidence.junit5.engine.Assertion;
 import org.saynotobugs.confidence.junit5.engine.Confidence;
+import org.saynotobugs.confidence.junit5.engine.Resource;
 import org.saynotobugs.confidence.junit5.engine.resource.TempDir;
 
 import java.io.File;
 import java.nio.charset.Charset;
 
-import static org.dmfs.gver.dsl.utils.Matchers.given;
 import static org.dmfs.jems2.hamcrest.matchers.LambdaMatcher.having;
 import static org.dmfs.jems2.hamcrest.matchers.function.FragileFunctionMatcher.associates;
 import static org.hamcrest.Matchers.equalTo;
-import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.*;
+import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.assertionThat;
+import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResource;
+import static org.saynotobugs.confidence.junit5.engine.Resources.initialized;
 import static org.saynotobugs.confidence.quality.Core.*;
 
 
@@ -46,6 +49,8 @@ class GitVersionTest
     {
         mSuffixes.mSuffixes.clear();
     }
+
+    Resource<File> repoDir = new TempDir();
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -143,7 +148,7 @@ class GitVersionTest
                     tempDir,
                     "main",
                     repo ->
-                        given(
+                        new Given<>(
                             () -> new File(tempDir, "dirty").createNewFile(),
                             ignored ->
                                 associates(repo,
@@ -166,7 +171,7 @@ class GitVersionTest
                     tempDir,
                     "main",
                     repo ->
-                        given(
+                        new Given<>(
                             () -> new File(tempDir, "version").delete(),
                             ignored ->
                                 associates(repo,
@@ -189,7 +194,7 @@ class GitVersionTest
                     tempDir,
                     "main",
                     repo ->
-                        given(
+                        new Given<>(
                             () -> {
                                 new File(tempDir, "dirty").createNewFile();
                                 new Git(repo).add().addFilepattern("dirty").call();
@@ -204,27 +209,24 @@ class GitVersionTest
     }
 
 
-    Assertion illegal_commit_fails = withResource(
-        new TempDir(),
+    Assertion gitVersion_on_repo_with_invalid_commit_fails = withResource(initialized(repo ->
+            {
+                new File(repoDir.value(), "newFile").createNewFile();
+                Git git = new Git(repo);
+                git.add().addFilepattern("newFile").call();
+                git.commit().setMessage("commit #invalid").call();
+            },
+            new Repo("0.1.0-alpha.bundle", "main", repoDir)),
 
-        tempDir -> withResource(initialized(repo ->
-                {
-                    new File(tempDir, "newFile").createNewFile();
-                    Git git = new Git(repo);
-                    git.add().addFilepattern("newFile").call();
-                    git.commit().setMessage("commit #invalid").call();
-                },
-                new Repository(getClass().getClassLoader().getResource("0.1.0-alpha.bundle"), "main", tempDir)),
-
-            repo -> assertionThat(new GitVersion(new FirstOf(
-                    ChangeType.INVALID.when(new CommitMessage(new Contains("#invalid"))),
-                    ChangeType.MAJOR.when(new CommitMessage(new Contains("#major"))),
-                    ChangeType.MINOR.when(new CommitMessage(new Contains("#minor"))),
-                    ChangeType.PATCH.when(new CommitMessage(new Contains("#patch"))),
-                    ChangeType.NONE.when(new CommitMessage(new Contains("#trivial"))),
-                    ChangeType.UNKNOWN.when(((treeWalk, commit, branches) -> true))),
-                    new Suffixes(), ignored -> "alpha"),
-                has("version", v -> () -> v.value(repo), is(throwing(IllegalArgumentException.class))))));
+        repo -> assertionThat(new GitVersion(new FirstOf(
+                ChangeType.INVALID.when(new CommitMessage(new Contains("#invalid"))),
+                ChangeType.MAJOR.when(new CommitMessage(new Contains("#major"))),
+                ChangeType.MINOR.when(new CommitMessage(new Contains("#minor"))),
+                ChangeType.PATCH.when(new CommitMessage(new Contains("#patch"))),
+                ChangeType.NONE.when(new CommitMessage(new Contains("#trivial"))),
+                ChangeType.UNKNOWN.when(((treeWalk, commit, branches) -> true))),
+                new Suffixes(), ignored -> "alpha"),
+            has("version", v -> () -> v.value(repo), is(throwing(IllegalArgumentException.class)))));
 
 
 }
