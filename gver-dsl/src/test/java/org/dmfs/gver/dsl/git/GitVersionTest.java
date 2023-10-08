@@ -209,9 +209,10 @@ class GitVersionTest
     }
 
 
-    Assertion gitVersion_on_repo_with_invalid_commit_fails = withResource(initialized(repo ->
+    Assertion gitVersion_on_repo_with_invalid_commit_fails = withResource(
+        initialized(repo ->
             {
-                new File(repoDir.value(), "newFile").createNewFile();
+                new File(repo.getWorkTree(), "newFile").createNewFile();
                 Git git = new Git(repo);
                 git.add().addFilepattern("newFile").call();
                 git.commit().setMessage("commit #invalid").call();

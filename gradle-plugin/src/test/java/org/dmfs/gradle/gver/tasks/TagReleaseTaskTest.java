@@ -19,7 +19,7 @@ import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.confidence.Jems2.procedureThatAffects;
 import static org.eclipse.jgit.lib.Constants.R_TAGS;
 import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.assertionThat;
-import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResource;
+import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResources;
 import static org.saynotobugs.confidence.quality.Core.*;
 
 
@@ -39,10 +39,10 @@ class TagReleaseTaskTest
         homeDir);
 
     Assertion gitTagRelease_adds_a_next_patch_tag =
-        withResource(new Repo("0.0.2-alpha.1.bundle", "main", repoDir),
+        withResources(new Repo("0.0.2-alpha.1.bundle", "main", repoDir), testProject,
 
-            repo -> assertionThat(
-                repository -> ((TagReleaseTask) testProject.value().getTasks().getByName("gitTagRelease")).perform(),
+            (repo, project) -> assertionThat(
+                repository -> ((TagReleaseTask) project.getTasks().getByName("gitTagRelease")).perform(),
                 is(procedureThatAffects(
                     new Text("alters repository"),
                     () -> repo,
@@ -50,10 +50,10 @@ class TagReleaseTaskTest
 
 
     Assertion gitTagRelease_no_tag_on_feature_branch =
-        withResource(new Repo("0.2.0-alpha.1.feature.bundle", "feature", repoDir),
+        withResources(new Repo("0.2.0-alpha.1.feature.bundle", "feature", repoDir), testProject,
 
-            repo -> assertionThat(
-                repository -> ((TagReleaseTask) testProject.value().getTasks().getByName("gitTagRelease")).perform(),
+            (repo, project) -> assertionThat(
+                repository -> ((TagReleaseTask) project.getTasks().getByName("gitTagRelease")).perform(),
                 is(procedureThatAffects(
                     new Text("preserves repository"),
                     () -> repo,
@@ -62,10 +62,10 @@ class TagReleaseTaskTest
 
 
     Assertion gitTagRelease_skips_existing_tag =
-        withResource(new Repo("0.2.0-trivial-change.bundle", "main", repoDir),
+        withResources(new Repo("0.2.0-trivial-change.bundle", "main", repoDir), testProject,
 
-            repo -> assertionThat(
-                repository -> ((TagReleaseTask) testProject.value().getTasks().getByName("gitTagRelease")).perform(),
+            (repo, project) -> assertionThat(
+                repository -> ((TagReleaseTask) project.getTasks().getByName("gitTagRelease")).perform(),
                 is(procedureThatAffects(
                     new Text("alters repository"),
                     () -> repo,

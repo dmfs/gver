@@ -46,9 +46,10 @@ class SuffixesTest
             maps(repo, to(preRelease(0, 1, 0, "alpha.20220116T191427Z-SNAPSHOT")))));
 
 
-    Assertion default_strategy_on_dirty_repo = withResource(initialized(repo -> {
-            new File(repoDir.value(), "dirty").createNewFile();
-            new Git(repo).add().addFilepattern("dirty").call();
+    Assertion default_strategy_on_dirty_repo = withResource(
+        initialized(repo -> {
+            new File(repo.getWorkTree(), "newFile").createNewFile();
+            new Git(repo).add().addFilepattern("newFile").call();
         }, repository),
 
         repo -> assertionThat(new GitVersion(mStrategy, new Suffixes(), ignored -> "alpha"),

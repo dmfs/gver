@@ -24,7 +24,7 @@ import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.confidence.Jems2.procedureThatAffects;
 import static org.eclipse.jgit.lib.Constants.R_TAGS;
 import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.assertionThat;
-import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResource;
+import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResources;
 import static org.saynotobugs.confidence.junit5.engine.Resources.initialized;
 import static org.saynotobugs.confidence.quality.Core.*;
 
@@ -46,23 +46,24 @@ class TagTaskTest
 
 
     Assertion gitTagRelease_adds_tag_for_current_version =
-        withResource(testProject,
-            project -> assertionThat(repository -> ((TagTask) project.getTasks().getByName("gitTag")).perform(),
+        withResources(testProject, testRepository,
+            (project, repo) -> assertionThat(repository -> ((TagTask) project.getTasks().getByName("gitTag")).perform(),
                 is(procedureThatAffects(
                     new Text("alters repository"),
-                    () -> testRepository.value(),
+                    () -> repo,
                     soIt(new HasTagListThat(iteratesInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1-SNAPSHOT")))))));
 
 
     Assertion gitTagRelease_fails_on_dirty_repo =
-        withResource(initialized(
+        withResources(initialized(
                 repo -> {
                     new File(repo.getWorkTree(), "newfile").createNewFile();
                     new Git(repo).add().addFilepattern("newfile").call();
                 },
                 testRepository),
+            testProject,
 
-            repo -> assertionThat(repository -> ((TagTask) testProject.value().getTasks().getByName("gitTag")).perform(),
+            (repo, project) -> assertionThat(repository -> ((TagTask) project.getTasks().getByName("gitTag")).perform(),
                 is(procedureThatAffects(
                     new Text("alters repository"),
                     () -> repo,
