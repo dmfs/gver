@@ -7,7 +7,7 @@ import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.saynotobugs.confidence.junit5.engine.Resource;
 import org.saynotobugs.confidence.junit5.engine.ResourceComposition;
-import org.saynotobugs.confidence.junit5.engine.resource.LazyResource;
+import org.saynotobugs.confidence.junit5.engine.resource.Derived;
 
 import java.io.File;
 
@@ -26,21 +26,18 @@ public final class TestProject extends ResourceComposition<Project>
 
     public TestProject(Resource<File> projectDir, Strategy strategy, Suffixes suffixes, Resource<File> homeDir)
     {
-        // TODO, this should be a Resource derived from two values
-        super(new LazyResource<>(
-            () -> {
+        super(new Derived<>(
+            (projectDirectory, homeDirectory) -> {
                 Project project = ProjectBuilder.builder()
-                    .withProjectDir(projectDir.value())
-                    .withGradleUserHomeDir(homeDir.value())
+                    .withProjectDir(projectDirectory)
+                    .withGradleUserHomeDir(homeDirectory)
                     .build();
                 project.getPluginManager().apply("org.dmfs.gver");
                 ((GitVersionConfig) project.getExtensions().getByName("gver")).mChangeTypeStrategy = strategy;
                 ((GitVersionConfig) project.getExtensions().getByName("gver")).mSuffixes = suffixes;
                 return project;
             },
-            project -> {
-                projectDir.close();
-                homeDir.close();
-            }));
+            projectDir,
+            homeDir));
     }
 }

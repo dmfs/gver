@@ -19,8 +19,7 @@ import java.io.File;
 
 import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.confidence.Jems2.procedureThatAffects;
-import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.assertionThat;
-import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResources;
+import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.*;
 import static org.saynotobugs.confidence.quality.Core.*;
 
 
@@ -44,13 +43,14 @@ class VersionTaskTest
     Assertion gitVersion_prints_version =
         withResources(
             Resources.systemOut(), testRepository,
-            (systemOut, repo) ->
-                assertionThat(repository -> ((VersionTask) testProject.value().getTasks().getByName("gitVersion")).perform(),
-                    is(procedureThatAffects(
-                        new Text("System.out"),
-                        () -> systemOut,
-                        soIt(has(
-                            "output",
-                            Generator::next,
-                            containsPattern("0\\.0\\.2-alpha\\.1\\.20220116T202206Z-SNAPSHOT")))))));
+            (systemOut, repo) -> withResource(testProject,
+                project ->
+                    assertionThat(repository -> ((VersionTask) project.getTasks().getByName("gitVersion")).perform(),
+                        is(procedureThatAffects(
+                            new Text("System.out"),
+                            () -> systemOut,
+                            soIt(has(
+                                "output",
+                                Generator::next,
+                                containsPattern("0\\.0\\.2-alpha\\.1\\.20220116T202206Z-SNAPSHOT"))))))));
 }

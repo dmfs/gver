@@ -27,9 +27,9 @@ dependencies {
     testImplementation "org.hamcrest:hamcrest:2.2"
     testImplementation "org.dmfs:jems2-confidence:2.19.0"
     testImplementation "org.hamcrest:hamcrest:2.2"
-    testImplementation "org.saynotobugs:confidence-core:0.26.1"
-    testImplementation "org.saynotobugs:confidence-incubator:0.26.1"
-    testImplementation "org.saynotobugs:confidence-test:0.26.1"
+    testImplementation "org.saynotobugs:confidence-core:0.28.0"
+    testImplementation "org.saynotobugs:confidence-incubator:0.28.0"
+    testImplementation "org.saynotobugs:confidence-test:0.28.0"
     testAnnotationProcessor 'org.dmfs:srcless-processors:0.3.0'
 }
 
