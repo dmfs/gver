@@ -18,9 +18,11 @@ import java.io.File;
 import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.confidence.Jems2.procedureThatAffects;
 import static org.eclipse.jgit.lib.Constants.R_TAGS;
+import static org.saynotobugs.confidence.core.quality.Grammar.*;
+import static org.saynotobugs.confidence.core.quality.Iterable.iteratesInAnyOrder;
+import static org.saynotobugs.confidence.core.quality.Object.throwing;
 import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.assertionThat;
 import static org.saynotobugs.confidence.junit5.engine.ConfidenceEngine.withResources;
-import static org.saynotobugs.confidence.quality.Core.*;
 
 
 @Confidence

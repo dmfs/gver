@@ -1,4 +1,5 @@
 rootProject.name = 'gver'
 include 'gradle-plugin'
 include 'gver-dsl'
+include 'gver-maven'
 

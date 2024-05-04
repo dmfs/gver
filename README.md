@@ -467,16 +467,21 @@ The following tasks are available to tag the current Git head:
 
 #### `gitTagRelease`
 
-Adds a release version tag to the current Git head, if allowed by the `tag` configuration.
+Adds a release version tag to the current Git head, if allowed by the `tag` configuration. Fails with an Exception
+otherwise.
 
 #### `gitTagPreRelease`
 
-Adds a pre-release version tag to the current Git head, if allowed by the `tag` configuration.
+Adds a pre-release version tag to the current Git head, if allowed by the `tag` configuration. Fails with an Exception
+otherwise.
 
 #### `gitTag`
 
 Adds a version tag to the current Git head. The release type is determined by the `tag` configuration. The first
 entry that matches the current head to be precise.
+
+In contrast to `gitTagRelease` and `gitTagPreRelease` this does not throw an Exception when the configuration does not
+permit creation of a tag.
 
 ⚠️ This behavior has changed since 0.35.0, when this always created a pre-release version tag. To create a pre-release
 version tag use `gitTagPreRelease` now.
@@ -556,6 +561,63 @@ gver {
 At present a dirty working tree always results in a pre-release version. Depending on the last tag, either the
 pre-release or the minor version
 is incremented. This prevents accidental release builds after a file has been changed.
+
+# Maven Plugin
+
+*Note, the Maven Plugin is currently in experimental state and may be subject to change.*
+
+You can use some of the features with Maven too. There is a plugin that takes the same configuration and provides
+a goal to apply the version to the project and create a tag.
+
+## Usage
+
+Apply the `gver-maven` plugin and configure it like this:
+
+```xml
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.dmfs</groupId>
+            <artifactId>gver-maven</artifactId>
+            <version>0.37.0</version>
+            <configuration>
+                <config>L: {
+                    changes {
+                    are none when {
+                    affects only(matches(~/.*\.md/))
+                    }
+                    are major when {
+                    commitMessage contains(~/(?i)#(major|break(ing)?)\b/)
+                    }
+                    are minor when {
+                    commitMessage^ contains(~/(?i)#minor\b/)
+                    }
+                    otherwise patch
+                    }}
+                </config>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+Note, the `L:` is not a typo, it must be present before the closure.
+The configuration itself works as described for the Gradle Plugin above, although some options may not be usable with
+Maven.
+
+## Goals
+
+### `gver:tag-and-set-version`
+
+To update the project to the current version (as determined using the tag configuration) run
+
+```bash
+mvn gver:tag-and-set-version
+```
+
+**Important:** (unless the project version equals the determined version) this modifies the pom files, resulting in a
+dirty working tree. This means, after executing this goal, the next version will be e different every time.
 
 ## License
 
