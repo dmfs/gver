@@ -37,10 +37,16 @@ test {
 }
 
 gradlePlugin {
+    website = 'https://github.com/dmfs/gver'
+    vcsUrl = 'https://github.com/dmfs/gver'
     plugins {
         gverPlugin {
             id = 'org.dmfs.gver'
             implementationClass = 'org.dmfs.gradle.gver.GitVersionPlugin'
+            displayName = 'gver plugin'
+            description = 'Gradle versioning based on git history.' +
+                    'This plugin was formerly published with the ID org.dmfs.gitversion.'
+            tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
         }
     }
 }
