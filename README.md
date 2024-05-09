@@ -265,6 +265,31 @@ gver {
 }
 ```
 
+#### anyOf
+
+A change type matches when *all* conditions in the Closure after `when` match. An "any of" 
+behavior is achieved by adding more change types underneath each other, with the first one
+matching being applied.
+Sometimes this can become a bit lengthy and more difficult to understand. If all conditions
+have the same priority you can put them together into one change type and combine then with
+`anyOf`.
+
+```groovy
+gver {
+    changes {
+        are minor when { anyOf {
+                branch matches(~/feature\/.*/) // for local builds
+                envVariable "BRANCH_NAME", matches(~/feature\/.*/) // for Jenkins builds
+        }}
+        are patch when { anyOf {
+                branch matches(~/bugfix\/.*/)
+                envVariable "BRANCH_NAME", matches(~/bugfix\/.*/)
+        }}
+        ...
+    }
+}
+```
+
 ### Pre-Releases
 
 gver can apply different pre-release versions, based on the current head's name, e.g.

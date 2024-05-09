@@ -1,12 +1,17 @@
 package org.dmfs.gver.dsl;
 
+import groovy.lang.Closure;
+import org.dmfs.gver.dsl.utils.Matches;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.Test;
+import org.saynotobugs.confidence.description.Text;
 
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
-import static org.dmfs.gver.dsl.Conditions.contains;
+import static org.dmfs.jems2.mockito.Mock.mock;
 import static org.saynotobugs.confidence.Assertion.assertThat;
 import static org.saynotobugs.confidence.quality.Core.*;
 
@@ -79,5 +84,54 @@ class ConditionsTest
                 not(satisfiedBy("aaaaabcabc")),
                 not(satisfiedBy("abac")),
                 not(satisfiedBy("ab"))));
+    }
+
+
+    @Test
+    void testAnyOf()
+    {
+        assertThat(Conditions::new,
+
+            allOf(
+                mutatedBy(
+                    new Text("anyOf"),
+                    (Conditions c) -> c.anyOf(new Closure<Void>(this)
+                    {
+                        @Override
+                        public Void call()
+                        {
+                            ((Conditions) getDelegate()).branch("main"::equals);
+                            ((Conditions) getDelegate()).branch("master"::equals);
+                            return null;
+                        }
+                    }),
+                    not(new Matches(mock(Repository.class), mock(RevCommit.class), "branch"))),
+                mutatedBy(
+                    new Text("anyOf"),
+                    (Conditions c) -> c.anyOf(new Closure<Void>(this)
+                    {
+                        @Override
+                        public Void call()
+                        {
+                            ((Conditions) getDelegate()).branch("main"::equals);
+                            ((Conditions) getDelegate()).branch("branch"::equals);
+                            return null;
+                        }
+                    }),
+                    new Matches(mock(Repository.class), mock(RevCommit.class), "branch")),
+                mutatedBy(
+                    new Text("anyOf"),
+                    (Conditions c) -> c.anyOf(new Closure<Void>(this)
+                    {
+                        @Override
+                        public Void call()
+                        {
+                            ((Conditions) getDelegate()).branch("main"::equals);
+                            ((Conditions) getDelegate()).branch("branch"::equals);
+                            return null;
+                        }
+                    }),
+                    new Matches(mock(Repository.class), mock(RevCommit.class), "main"))
+            ));
     }
 }
