@@ -1,5 +1,6 @@
 package org.dmfs.gver.dsl;
 
+import groovy.lang.Closure;
 import org.dmfs.gver.git.changetypefacories.Condition;
 import org.dmfs.gver.git.changetypefacories.condition.*;
 import org.dmfs.gver.git.predicates.Contains;
@@ -47,6 +48,16 @@ public class Conditions implements Condition
     public void envVariable(String variableName, Predicate<? super String> predicate)
     {
         mConditions.add(new EnvVariable(variableName, predicate));
+    }
+
+
+    public void anyOf(Closure<?> delegate)
+    {
+        Conditions conditions = new Conditions();
+        delegate.setDelegate(conditions);
+        delegate.setResolveStrategy(Closure.DELEGATE_FIRST);
+        delegate.call();
+        mConditions.add(new AnyOf(conditions.mConditions));
     }
 
     @SafeVarargs
