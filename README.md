@@ -234,6 +234,37 @@ gver {
 }
 ```
 
+#### envVariable
+
+In some environments, e.g. Jenkins builds, the plugin may not be able to
+determine branch names from the git repo.
+Instead, you may have to grab the current branch name from
+an environment variable like `BRANCH_NAME`. Typically, you probably
+still want to combine that with the `branch` condition to support
+local builds.
+
+Example:
+
+```groovy
+gver {
+    changes {
+        are minor when {
+            branch matches(~/feature\/.*/) // for local builds
+        }
+        are minor when {
+            envVariable "BRANCH_NAME", matches(~/feature\/.*/) // for Jenkins builds
+        }
+        are patch when {
+            branch matches(~/bugfix\/.*/)
+        }
+        are patch when {
+            envVariable "BRANCH_NAME", matches(~/bugfix\/.*/)
+        }
+        ...
+    }
+}
+```
+
 ### Pre-Releases
 
 gver can apply different pre-release versions, based on the current head's name, e.g.
