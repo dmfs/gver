@@ -1,8 +1,8 @@
 package org.dmfs.gver.git;
 
 import groovy.lang.Closure;
+import org.dmfs.gver.dsl.ConditionConsumer;
 import org.dmfs.gver.dsl.Conditions;
-import org.dmfs.gver.dsl.SuffixPattern;
 import org.dmfs.gver.dsl.SuffixStrategy;
 import org.dmfs.gver.git.predicates.IsDirty;
 import org.dmfs.jems2.Optional;
@@ -56,7 +56,7 @@ public final class Suffixes
     public final static String DEFAULT = "\u0000";
 
 
-    public SuffixPattern append(String suffix)
+    public ConditionConsumer append(String suffix)
     {
         SuffixStrategy defaultStrategy = DEFAULT.equals(suffix)
             ? DEFAULT_STRATEGY.get()
@@ -65,14 +65,25 @@ public final class Suffixes
         mSuffixes.add(defaultStrategy);
 
         return
-            condition -> {
+            new ConditionConsumer()
+            {
+                @Override
+                public void when(Closure<?> condition)
+                {
+                    Conditions conditions = new Conditions();
+                    condition.setResolveStrategy(Closure.DELEGATE_FIRST);
+                    condition.setDelegate(conditions);
+                    condition.call();
+                    mSuffixes.set(mSuffixes.indexOf(defaultStrategy),
+                        (repository, commit, branches) -> conditions.matches(repository, commit, branches) ? new Present<>(suffix) : Absent.absent());
+                }
 
-                Conditions conditions = new Conditions();
-                condition.setResolveStrategy(Closure.DELEGATE_FIRST);
-                condition.setDelegate(conditions);
-                condition.call();
-                mSuffixes.set(mSuffixes.indexOf(defaultStrategy),
-                    (repository, commit, branches) -> conditions.matches(repository, commit, branches) ? new Present<>(suffix) : Absent.absent());
+                @Override
+                public Void getOtherwise()
+                {
+                    mSuffixes.add((repository, commit, branches) -> new Present<>(suffix));
+                    return null;
+                }
             };
     }
 

@@ -31,18 +31,30 @@ public class Strategy
 
     public ConditionConsumer are(ChangeType changeType)
     {
-        return condition -> {
+        return new ConditionConsumer()
+        {
+            @Override
+            public void when(Closure<?> condition)
+            {
+                Conditions conditions = new Conditions();
+                condition.setResolveStrategy(Closure.DELEGATE_FIRST);
+                condition.setDelegate(conditions);
+                condition.call();
 
-            Conditions conditions = new Conditions();
-            condition.setResolveStrategy(Closure.DELEGATE_FIRST);
-            condition.setDelegate(conditions);
-            condition.call();
+                mChangeTypeStrategies.add(changeType.when(conditions));
+            }
 
-            mChangeTypeStrategies.add(changeType.when(conditions));
+            @Override
+            public Void getOtherwise()
+            {
+                mChangeTypeStrategies.add(changeType.when(((repository, commit, branches) -> true)));
+                return null;
+            }
         };
     }
 
 
+    @Deprecated
     public void otherwise(ChangeType changeType)
     {
         mChangeTypeStrategies.add(changeType.when(((repository, commit, branches) -> true)));
