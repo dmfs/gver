@@ -1,13 +1,9 @@
 package org.dmfs.gver.dsl;
 
 import org.dmfs.gver.git.changetypefacories.Condition;
-import org.dmfs.gver.git.changetypefacories.condition.AllOf;
-import org.dmfs.gver.git.changetypefacories.condition.Branch;
-import org.dmfs.gver.git.changetypefacories.condition.CommitMessage;
-import org.dmfs.gver.git.changetypefacories.condition.CommitTitle;
+import org.dmfs.gver.git.changetypefacories.condition.*;
 import org.dmfs.gver.git.predicates.Contains;
 import org.dmfs.gver.git.predicates.Matches;
-import org.dmfs.gver.git.changetypefacories.condition.Affects;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 
@@ -47,6 +43,11 @@ public class Conditions implements Condition
         mConditions.add(new Affects(predicate));
     }
 
+
+    public void envVariable(String variableName, Predicate<? super String> predicate)
+    {
+        mConditions.add(new EnvVariable(variableName, predicate));
+    }
 
     @SafeVarargs
     public static Predicate<Set<String>> anyThat(Predicate<String>... delegates)

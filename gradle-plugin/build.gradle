@@ -1,5 +1,4 @@
 plugins {
-    id 'java-gradle-plugin'
     id "com.gradle.plugin-publish" version "1.2.1"
     id 'maven-publish' // required to generate correct meta data
 }
@@ -15,7 +14,7 @@ repositories {
 dependencies {
     implementation project(":gver-dsl")
     implementation "org.dmfs:semver:0.2.0"
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r'
     implementation 'org.dmfs:srcless-annotations:0.3.0'
     implementation "org.dmfs:jems2:2.19.0"
     annotationProcessor 'org.dmfs:srcless-processors:0.3.0'
@@ -42,21 +41,6 @@ gradlePlugin {
         gverPlugin {
             id = 'org.dmfs.gver'
             implementationClass = 'org.dmfs.gradle.gver.GitVersionPlugin'
-        }
-    }
-}
-
-gradlePlugin {
-    website = 'https://github.com/dmfs/gver'
-    vcsUrl = 'https://github.com/dmfs/gver'
-
-    plugins {
-        gverPlugin {
-            // id is captured from java-gradle-plugin configuration
-            displayName = 'gver plugin'
-            description = 'Gradle versioning based on git history.' +
-                    'This plugin was formerly published with the ID org.dmfs.gitversion.'
-            tags = ['semver', 'tag', 'git', 'version', 'semantic-versioning', 'semantic']
         }
     }
 }

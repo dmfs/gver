@@ -28,7 +28,7 @@ dependencies {
     compileOnly 'org.codehaus.groovy:groovy-all:2.5.19'
     implementation "org.dmfs:semver:0.2.0"
     implementation "org.dmfs:rfc5545-datetime:0.3"
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r'
     implementation 'org.dmfs:srcless-annotations:0.3.0'
     implementation "org.dmfs:jems2:2.19.0"
 
@@ -50,4 +50,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    // test variable for EnvVariableTest
+    environment "GVER_TEST_VARIABLE_FOOBAR", "foobar"
+    environment "GVER_TEST_VARIABLE_EMPTY", ""
 }
