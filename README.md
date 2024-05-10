@@ -2,22 +2,27 @@
 [![codecov](https://codecov.io/gh/dmfs/gver/branch/main/graph/badge.svg)](https://codecov.io/gh/dmfs/gver)  
 [![Confidence](https://img.shields.io/badge/Tested_with-Confidence-800000?labelColor=white)](https://saynotobugs.org/confidence)
 
-
 # gver
 
 A plugin to take care of versioning your code, so you don't have to.
 
-gver provides a domain specific language (DSL) that lets you describe in simple terms how to derive your version numbers from your
-git history. This includes expressions to test the names of affected files and to check the type of referenced issues, allowing you to
-skip a version update when no code or build file was altered or to derive the type of change (feature vs. bugfix) from the implemented/fixed ticket.
+gver provides a domain specific language (DSL) that lets you describe in simple terms how to derive your version numbers
+from your
+git history. This includes expressions to test the names of affected files and to check the type of referenced issues,
+allowing you to
+skip a version update when no code or build file was altered or to derive the type of change (feature vs. bugfix) from
+the implemented/fixed ticket.
 
 # Example
 
 In order to use the plugin, it needs to be configured. Currently, there is no default configuration.
 
-The following example considers commits to be breaking changes when the commit message contains either the hashtags `#major` or `#break`. If the commit message
-contains neither, the commit message is searched for the pattern `#\d` and, in case one is found, a matching issue is looked up in the Github repository
-"dmfs/jems". If an issue is found, the change type is determined by whether the issue has a `bug` tag or not. If no Github issue was found, the change type is
+The following example considers commits to be breaking changes when the commit message contains either the
+hashtags `#major` or `#break`. If the commit message
+contains neither, the commit message is searched for the pattern `#\d` and, in case one is found, a matching issue is
+looked up in the Github repository
+"dmfs/jems". If an issue is found, the change type is determined by whether the issue has a `bug` tag or not. If no
+Github issue was found, the change type is
 considered to be a minor change when the commit message contains either the pattern `#feature\b` or
 `(?i)\b(implement(s|ed)?|close[sd]?) #\d+\b`, and a patch when it contains `(?i)\b(fix(e[sd])?|resolve[sd]?) #\d+\b`.
 
@@ -50,7 +55,7 @@ gver {
                 where("issue") { isIssue { labeled "bug" } }
             }
         }
-        otherwise patch // every other change always results in a new patch version
+        are patch otherwise // every other change always results in a new patch version
     }
     preReleases {
         // pre-release on the main branch are versioned like a.b.c-beta.x
@@ -74,12 +79,14 @@ gver {
 
 ## DSL
 
-The following sections describe the DSL to specify your versioning scheme. Note that the DSL is not stable yet and may change with every new
+The following sections describe the DSL to specify your versioning scheme. Note that the DSL is not stable yet and may
+change with every new
 version.
 
 ### describing change types
 
-When practising semantic versioning, the most important step is to understand the kind of change (major, minor, bugfix). gver provides
+When practising semantic versioning, the most important step is to understand the kind of change (major, minor, bugfix).
+gver provides
 a DSL to describe how to derive the kind of change based on commit message or referenced issues.
 
 The top-level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix change.
@@ -101,7 +108,8 @@ gver {
 
 A change type can appear multiple times in the list if it's to be applied under multiple conditions.
 
-In addition to `major`, `minor`, `patch`, gver also knows a `none` type to identify trivial changes that should not result in a new version,
+In addition to `major`, `minor`, `patch`, gver also knows a `none` type to identify trivial changes that should not
+result in a new version,
 e.g. typo fixes in documentation files.
 
 The `invalid` change type can be used to validate commits. As soon as the project version is determined, this will
@@ -123,8 +131,31 @@ gver {
 Note that all conditions inside a change type closure must match in order to apply the change type. If you need to
 express a logical `or`, describe the same change type with the other condition underneath the first one or use `anyOf` described below.
 
-The `otherwise` statement should be last in the list as it catches all cases that didn't match any of the other conditions. The default is to
+The `otherwise` case should be last in the list as it catches all cases that didn't match any of the other conditions.
+The default is to
 increase any pre-release version or create a new minor pre-release if no pre-release version is present yet.
+
+**Note**, the notation
+
+```groovy
+gver {
+    changes {
+        ...
+        otherwise patch
+    }
+}
+```
+
+has been deprecated in favour of
+
+```groovy
+gver {
+    changes {
+        ...
+        are patch otherwise
+    }
+}
+```
 
 ### using conventions
 
@@ -149,7 +180,7 @@ gver {
         are minor when { commitTitle contains(~/🎀/) }
         are patch when { commitTitle contains(~/🩹/) }
         follow conventionalCommits
-        otherwise none
+        are none otherwise
     }
 }
 ```
@@ -160,11 +191,13 @@ break the build when a commit doesn't conform to the convention.
 
 ### conditions
 
-At present, the type of change can be determined from the current branch name or the commit history up to the last tagged version.
+At present, the type of change can be determined from the current branch name or the commit history up to the last
+tagged version.
 
 #### `commitMessage`
 
-`commitMessage` tests the entire commit message. You'd typically use it with `contains` or `matches`  to test it with a regular expression.
+`commitMessage` tests the entire commit message. You'd typically use it with `contains` or `matches`  to test it with a
+regular expression.
 
 ```groovy
 gver {
@@ -199,7 +232,8 @@ This works almost like `commitMessage` but only takes the first line of a commit
 
 This can be used to match the name of the current Git head.
 
-The following configuration considers all changes on the main branch as minor changes, whereas changes on `release` branches are considered to be
+The following configuration considers all changes on the main branch as minor changes, whereas changes on `release`
+branches are considered to be
 patches.
 
 ```groovy
@@ -266,7 +300,7 @@ gver {
 
 #### anyOf
 
-A change type matches when *all* conditions in the Closure after `when` match. An "any of" 
+A change type matches when *all* conditions in the Closure after `when` match. An "any of"
 behavior is achieved by adding more change types underneath each other, with the first one
 matching being applied.
 Sometimes this can become a bit lengthy and more difficult to understand. If all conditions
@@ -276,14 +310,18 @@ have the same priority, you can put them together into one change type and combi
 ```groovy
 gver {
     changes {
-        are minor when { anyOf {
+        are minor when {
+            anyOf {
                 branch matches(~/feature\/.*/) // for local builds
                 envVariable "BRANCH_NAME", matches(~/feature\/.*/) // for Jenkins builds
-        }}
-        are patch when { anyOf {
+            }
+        }
+        are patch when {
+            anyOf {
                 branch matches(~/bugfix\/.*/)
                 envVariable "BRANCH_NAME", matches(~/bugfix\/.*/)
-        }}
+            }
+        }
         ...
     }
 }
@@ -307,14 +345,17 @@ gver {
 In the closure passed to `use` you can use any groups declared in your regular expression. The resulting pre-release version will automatically
 be sanitized to comply with SemVer syntax.
 
-When your pre-release doesn't end with a numeric segment, the next pre-relase will automatically append `.1` and continue counting from that.
+When your pre-release doesn't end with a numeric segment, the next pre-relase will automatically append `.1` and
+continue counting from that.
 If the pre-release already ends with a numeric segment, it will be incremented by 1 with every subsequent pre-release.
 
 ### Suffixes
 
-gver can append a suffix to pre-release versions. The suffix is always appended verbatim. This is primarily useful to create
+gver can append a suffix to pre-release versions. The suffix is always appended verbatim. This is primarily useful to
+create
 `SNAPSHOT` releases.
-Suffixes are specified with `append "<suffix>" when {}` where the closure contains one of the conditions also used in the `changes` DSL.
+Suffixes are specified with `append "<suffix>" when {}` where the closure contains one of the conditions also used in
+the `changes` DSL.
 
 Examples
 
@@ -332,13 +373,13 @@ gver {
 
 Appends a suffix like `2022-12-13-SNAPSHOT` to every pre-release that's not on a main branch.
 
-You can set a suffix unconditionally by omitting `when` and the closure:
+You can set a suffix unconditionally by using `otherwise` instead of `when`
 
 ```groovy
 gver {
     ...
     suffixes {
-        append ".${new Date().format("yyyy-MM-dd")}-SNAPSHOT"
+        append ".${new Date().format("yyyy-MM-dd")}-SNAPSHOT" otherwise
     }
     ...
 }
@@ -346,8 +387,10 @@ gver {
 
 Unconditional suffixes always match, hence any `append` clause following an unconditional suffix will never be applied.
 
-If no suffixes are specified, the suffix `".<timestamp>-SNAPSHOT"` is added to every pre-release where `<timestamp>` is either the date and time
-(in UTC and RFC 5545 notation) of the HEAD commit in case the working tree is clean or the current date and time if the working tree is dirty.
+If no suffixes are specified, the suffix `".<timestamp>-SNAPSHOT"` is added to every pre-release where `<timestamp>` is
+either the date and time
+(in UTC and RFC 5545 notation) of the HEAD commit in case the working tree is clean or the current date and time if the
+working tree is dirty.
 
 In order to apply the default suffix conditionally you can use the special suffix `DEFAULT` like
 
@@ -367,7 +410,7 @@ To disable any suffix use
 gver {
     ...
     suffixes {
-        append ""
+        append "" otherwise
     }
     ...
 }
@@ -389,7 +432,8 @@ gver {
 }
 ```
 
-This will cause the `gitTagRelease` task to fail on any branch not matching that pattern. The default is `~/(main|master)$/`
+This will cause the `gitTagRelease` task to fail on any branch not matching that pattern. The default
+is `~/(main|master)$/`
 
 ## Issue trackers
 
@@ -405,7 +449,8 @@ First you configure gver to check issues on GitHub:
 gver {
     issueTracker GitHub {
         repo = "dmfs/gver"  // account/repo
-        if (project.hasProperty("GITHUB_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
+        if (project.hasProperty("GITHUB_API_TOKEN")) {
+            // put the api token into your global gradle properties, never under version control
             accessToken = GITHUB_API_TOKEN
         }
     }
@@ -413,8 +458,10 @@ gver {
 }
 ```
 
-For public repos you can omit the API token. Note, however, that GitHub has a quota for unauthenticated API requests. When you don't
-provide an API token, the resulting version may be incorrect. Make sure you always provide a valid token in deployment environments.
+For public repos you can omit the API token. Note, however, that GitHub has a quota for unauthenticated API requests.
+When you don't
+provide an API token, the resulting version may be incorrect. Make sure you always provide a valid token in deployment
+environments.
 
 Now you can specify change types testing the issues.
 
@@ -435,7 +482,8 @@ gver {
 }
 ```
 
-This considers a change to be minor when it contains a GitHub issue reference to an issue with the label `enhancement` and to be a patch when
+This considers a change to be minor when it contains a GitHub issue reference to an issue with the label `enhancement`
+and to be a patch when
 it contains a GitHub issue reference to an issue without the label `enhancement`.
 
 ### Gitea
@@ -447,7 +495,8 @@ gver {
     issueTracker Gitea {
         host = "gitea.example.com"
         repo = "dmfs/gver"  // account/repo
-        if (project.hasProperty("GITEA_API_TOKEN")) { // put the api token into your global gradle properties, never under version control
+        if (project.hasProperty("GITEA_API_TOKEN")) {
+            // put the api token into your global gradle properties, never under version control
             accessToken = GITEA_API_TOKEN
         }
     }
@@ -462,13 +511,16 @@ is incremented. This prevents accidental release builds after a file has been ch
 
 ## License
 
-Copyright 2022 dmfs GmbH
+Copyright 2024 dmfs GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+License. You may obtain a copy of the
 License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
+limitations under the License.
 
