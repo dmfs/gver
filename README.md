@@ -13,7 +13,7 @@ skip a version update when no code or build file was altered or to derive the ty
 
 # Example
 
-In order to use the plugin it needs to be configured. Currently, there is no default configuration.
+In order to use the plugin, it needs to be configured. Currently, there is no default configuration.
 
 The following example considers commits to be breaking changes when the commit message contains either the hashtags `#major` or `#break`. If the commit message
 contains neither, the commit message is searched for the pattern `#\d` and, in case one is found, a matching issue is looked up in the Github repository
@@ -82,7 +82,7 @@ version.
 When practising semantic versioning, the most important step is to understand the kind of change (major, minor, bugfix). gver provides
 a DSL to describe how to derive the kind of change based on commit message or referenced issues.
 
-The top level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix change.
+The top-level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix change.
 The list of conditions is evaluated top to bottom until the first one matches.
 
 ```groovy
@@ -104,7 +104,7 @@ A change type can appear multiple times in the list if it's to be applied under 
 In addition to `major`, `minor`, `patch`, gver also knows a `none` type to identify trivial changes that should not result in a new version,
 e.g. typo fixes in documentation files.
 
-The `invalid` change type can be used to validate commits. As soon as the project version is determined this will
+The `invalid` change type can be used to validate commits. As soon as the project version is determined, this will
 throw an exception if the condition is fulfilled and the build will fail.
 
 Example:
@@ -121,8 +121,7 @@ gver {
 ```
 
 Note that all conditions inside a change type closure must match in order to apply the change type. If you need to
-express a logical `or` just
-add describe the same change type with the other condition underneath the first one.
+express a logical `or`, describe the same change type with the other condition underneath the first one or use `anyOf` described below.
 
 The `otherwise` statement should be last in the list as it catches all cases that didn't match any of the other conditions. The default is to
 increase any pre-release version or create a new minor pre-release if no pre-release version is present yet.
@@ -155,7 +154,7 @@ gver {
 }
 ```
 
-There are two flavours `strictConventionalCommits` and `conventionalCommits`. The latter falls though and applies
+There are two flavours `strictConventionalCommits` and `conventionalCommits`. The latter falls through and applies
 the next or default change rules if a commit doesn't conform to conventional commits, whereas the former will fail and
 break the build when a commit doesn't conform to the convention.
 
@@ -179,7 +178,7 @@ gver {
 
 This identifies major changes by the presence of the `#breaking` hashtag in the commit message.
 
-aAnother common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "resolved" followed by a `#` and
+Another common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "resolved" followed by a `#` and
 a numeric issue identifier.
 
 ```groovy
@@ -198,7 +197,7 @@ This works almost like `commitMessage` but only takes the first line of a commit
 
 #### `branch`
 
-This can be used to match the name of the current head.
+This can be used to match the name of the current Git head.
 
 The following configuration considers all changes on the main branch as minor changes, whereas changes on `release` branches are considered to be
 patches.
@@ -218,7 +217,7 @@ gver {
 
 #### affects
 
-This condition allows you to determine a change type based on the files that have been affected by a commit. It takes a Predicate of a `Set<String>`
+This condition allows you to determine a change type based on the files that have been affected by a commit. It takes a `Predicate` of a `Set<String>`
 like `anyThat`, `noneThat` or `only`.
 
 Example:
@@ -237,7 +236,7 @@ gver {
 #### envVariable
 
 In some environments, e.g. Jenkins builds, the plugin may not be able to
-determine branch names from the git repo.
+determine branch names from the Git repo.
 Instead, you may have to grab the current branch name from
 an environment variable like `BRANCH_NAME`. Typically, you probably
 still want to combine that with the `branch` condition to support
@@ -271,7 +270,7 @@ A change type matches when *all* conditions in the Closure after `when` match. A
 behavior is achieved by adding more change types underneath each other, with the first one
 matching being applied.
 Sometimes this can become a bit lengthy and more difficult to understand. If all conditions
-have the same priority you can put them together into one change type and combine then with
+have the same priority, you can put them together into one change type and combine them with
 `anyOf`.
 
 ```groovy
@@ -292,7 +291,7 @@ gver {
 
 ### Pre-Releases
 
-gver can apply different pre-release versions, based on the current head's name, e.g.
+gver can apply different pre-release versions, based on the current Git head's name, e.g.
 
 ```groovy
 gver {
@@ -306,7 +305,7 @@ gver {
 ```
 
 In the closure passed to `use` you can use any groups declared in your regular expression. The resulting pre-release version will automatically
-be sanitized to comply with semver syntax.
+be sanitized to comply with SemVer syntax.
 
 When your pre-release doesn't end with a numeric segment, the next pre-relase will automatically append `.1` and continue counting from that.
 If the pre-release already ends with a numeric segment, it will be incremented by 1 with every subsequent pre-release.
@@ -376,12 +375,12 @@ gver {
 
 ### Tagging releases
 
-gver can tag your current head with the current version or the next release version.
+gver can tag your current Git head with the current version or the next release version.
 
 The task `gitTag` creates a tag with the current pre-release version. The task `gitTagRelease` creates a tag with the next release version (unless
-the current commit already is a release version)
+the current commit already is a release version).
 
-To prevent accidental release version tags on non-release branches you can provide a pattern matching your release branch names.
+To prevent accidental release version tags on non-release branches, you can provide a pattern matching your release branch names.
 
 ```groovy
 gver {
@@ -394,12 +393,12 @@ This will cause the `gitTagRelease` task to fail on any branch not matching that
 
 ## Issue trackers
 
-gver can determine the type of change by checking the issues referred to in the commit message. At present, it supports two issue trackers
+gver can determine the type of change by checking the issues referred to in the commit message. At present, it supports two issue trackers,
 GitHub and Gitea.
 
 ### GitHub
 
-If your tickets are tracked at GitHub you can determine the type of change from the labels of an issue.
+If your tickets are tracked at GitHub, you can determine the type of change from the labels of an issue.
 First you configure gver to check issues on GitHub:
 
 ```groovy
@@ -459,7 +458,7 @@ gver {
 ## Dirty working trees
 
 At present a dirty working tree always results in a pre-release version. Depending on the last tag, either the pre-release or the minor version
-is incremented. This prevents accidental relase builds when after a file has been changed.
+is incremented. This prevents accidental release builds after a file has been changed.
 
 ## License
 
