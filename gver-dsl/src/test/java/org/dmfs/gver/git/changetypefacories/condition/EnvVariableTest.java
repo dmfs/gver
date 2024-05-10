@@ -17,7 +17,7 @@ class EnvVariableTest
     void testFooBar()
     {
         assertThat(new EnvVariable("GVER_TEST_VARIABLE_FOOBAR", "foobar"::equals),
-            new Matches(mock(Repository.class), mock(RevCommit.class), "branch"));
+            new Matches(mock(Repository.class), mock("commit", RevCommit.class), "branch"));
     }
 
     @Test

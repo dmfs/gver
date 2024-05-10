@@ -10,7 +10,6 @@ import org.dmfs.gver.git.predicates.Contains;
 import org.dmfs.jems2.optional.Present;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.saynotobugs.confidence.description.Text;
 import org.saynotobugs.confidence.junit5.engine.Assertion;
@@ -19,6 +18,7 @@ import org.saynotobugs.confidence.junit5.engine.Resource;
 import org.saynotobugs.confidence.junit5.engine.resource.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.dmfs.gver.git.ChangeType.*;
 import static org.dmfs.jems2.confidence.Jems2.procedureThatAffects;
@@ -45,16 +45,16 @@ class TagTaskTest
         homeDir);
 
 
-    Assertion gitTagRelease_adds_tag_for_current_version =
+    Assertion gitTag_adds_tag_for_current_version =
         withResources(testProject, testRepository,
             (project, repo) -> assertionThat(repository -> ((TagTask) project.getTasks().getByName("gitTag")).perform(),
                 is(procedureThatAffects(
                     new Text("alters repository"),
                     () -> repo,
-                    soIt(new HasTagListThat(iteratesInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2-alpha.1-SNAPSHOT")))))));
+                    soIt(new HasTagListThat(iteratesInAnyOrder(R_TAGS + "0.0.1", R_TAGS + "0.0.2")))))));
 
 
-    Assertion gitTagRelease_fails_on_dirty_repo =
+    Assertion gitTag_fails_on_dirty_repo =
         withResources(initialized(
                 repo -> {
                     new File(repo.getWorkTree(), "newfile").createNewFile();
@@ -68,6 +68,6 @@ class TagTaskTest
                     new Text("alters repository"),
                     () -> repo,
                     soIt(new HasTagListThat(iteratesInAnyOrder(R_TAGS + "0.0.1"))), // same tags as before
-                    when(throwing(GradleException.class))))));
+                    when(throwing(IOException.class))))));
 
 }

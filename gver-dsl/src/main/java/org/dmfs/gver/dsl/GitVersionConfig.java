@@ -6,6 +6,7 @@ import org.dmfs.gver.dsl.conventions.StrictConventionalCommits;
 import org.dmfs.gver.dsl.issuetracker.GitHub;
 import org.dmfs.gver.dsl.issuetracker.Gitea;
 import org.dmfs.gver.git.Suffixes;
+import org.dmfs.gver.git.changetypefacories.condition.Branch;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -19,8 +20,6 @@ public class GitVersionConfig
 
     public Optional<IssueTracker> issueTracker = Optional.empty();
 
-    public Pattern mReleaseBranchPattern = Pattern.compile("(main|master)$");
-
     public PreReleaseConfig mPreReleaseStrategies = new PreReleaseConfig();
 
     public Suffixes mSuffixes = new Suffixes();
@@ -28,6 +27,14 @@ public class GitVersionConfig
     // TODO: find a better way to provide these, this approach doesn't scale well
     public Closure conventionalCommits = new ConventionalCommits(this);
     public Closure strictConventionalCommits = new StrictConventionalCommits(this);
+
+    public TagConfig mTagConfig = new TagConfig();
+
+    public GitVersionConfig()
+    {
+        // provide legacy config as default
+        setReleaseBranchPattern(Pattern.compile("main|master"));
+    }
 
     public void setIssueTracker(IssueTracker issueTracker)
     {
@@ -57,7 +64,8 @@ public class GitVersionConfig
 
     public void setReleaseBranchPattern(Pattern releaseBranchPattern)
     {
-        mReleaseBranchPattern = releaseBranchPattern;
+        mTagConfig.mTagMappings.put(new Branch(branch -> releaseBranchPattern.matcher(branch).matches()), ReleaseType.RELEASE);
+        mTagConfig.mTagMappings.put(new Branch(branch -> releaseBranchPattern.matcher(branch).matches()), ReleaseType.PRERELEASE);
     }
 
 
@@ -107,6 +115,14 @@ public class GitVersionConfig
         mSuffixes.mSuffixes.clear();
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.setDelegate(mSuffixes);
+        closure.call();
+    }
+
+    public void tag(Closure<?> closure)
+    {
+        mTagConfig.mTagMappings.clear();
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.setDelegate(mTagConfig);
         closure.call();
     }
 
