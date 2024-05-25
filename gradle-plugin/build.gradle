@@ -13,23 +13,23 @@ repositories {
 
 dependencies {
     implementation project(":gver-dsl")
-    implementation "org.dmfs:semver:0.2.0"
+    implementation "org.dmfs:semver:1.0.0"
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r'
-    implementation 'org.dmfs:srcless-annotations:0.3.0'
-    implementation "org.dmfs:jems2:2.19.0"
-    annotationProcessor 'org.dmfs:srcless-processors:0.3.0'
+    implementation 'org.dmfs:srcless-annotations:0.6.0'
+    implementation 'org.dmfs:jems2:2.23.1'
+    annotationProcessor 'org.dmfs:srcless-processors:0.6.0'
 
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
-    testImplementation "org.dmfs:jems2-testing:2.19.0"
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0-M2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0-M2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
+    testImplementation 'org.dmfs:jems2-testing:2.23.1'
     testImplementation "org.hamcrest:hamcrest:2.2"
-    testImplementation "org.dmfs:jems2-confidence:2.19.0"
+    testImplementation 'org.dmfs:jems2-confidence:2.23.1'
     testImplementation "org.hamcrest:hamcrest:2.2"
-    testImplementation "org.saynotobugs:confidence-core:0.28.0"
-    testImplementation "org.saynotobugs:confidence-incubator:0.28.0"
-    testImplementation "org.saynotobugs:confidence-test:0.28.0"
-    testAnnotationProcessor 'org.dmfs:srcless-processors:0.3.0'
+    testImplementation 'org.saynotobugs:confidence-core:0.45.1'
+    testImplementation 'org.saynotobugs:confidence-incubator:0.45.1'
+    testImplementation 'org.saynotobugs:confidence-test:0.45.1'
+    testAnnotationProcessor 'org.dmfs:srcless-processors:0.6.0'
 }
 
 test {

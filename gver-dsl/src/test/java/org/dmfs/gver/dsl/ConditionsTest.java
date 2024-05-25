@@ -1,7 +1,9 @@
 package org.dmfs.gver.dsl;
 
 import groovy.lang.Closure;
+import org.dmfs.gver.dsl.utils.LambdaClosure;
 import org.dmfs.gver.dsl.utils.Matches;
+import org.dmfs.jems2.Procedure;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.Test;
@@ -95,16 +97,11 @@ class ConditionsTest
             allOf(
                 mutatedBy(
                     new Text("anyOf"),
-                    (Conditions c) -> c.anyOf(new Closure<Void>(this)
-                    {
-                        @Override
-                        public Void call()
-                        {
-                            ((Conditions) getDelegate()).branch("main"::equals);
-                            ((Conditions) getDelegate()).branch("master"::equals);
-                            return null;
-                        }
-                    }),
+                    (Conditions c) -> c.anyOf(new LambdaClosure<>(this,
+                        (Procedure<Conditions>) conditions -> {
+                            conditions.branch("main"::equals);
+                            conditions.branch("master"::equals);
+                        })),
                     not(new Matches(mock(Repository.class), mock(RevCommit.class), "branch"))),
                 mutatedBy(
                     new Text("anyOf"),

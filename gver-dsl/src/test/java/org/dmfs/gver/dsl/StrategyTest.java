@@ -1,7 +1,8 @@
 package org.dmfs.gver.dsl;
 
-import groovy.lang.Closure;
+import org.dmfs.gver.dsl.utils.LambdaClosure;
 import org.dmfs.gver.git.ChangeType;
+import org.dmfs.jems2.Procedure;
 import org.junit.jupiter.api.Test;
 import org.saynotobugs.confidence.description.Text;
 
@@ -16,30 +17,11 @@ class StrategyTest
         assertThat(Strategy::new,
             is(mutatedBy(
                 new Text("following Closure"),
-                (Strategy strategy) -> strategy.follow(new Closure(strategy)
-                {
-                    @Override
-                    public Object call()
-                    {
-                        ((Strategy) getDelegate()).are(ChangeType.MINOR).when(new Closure(strategy)
-                        {
-                            @Override
-                            public Object call(Object... args)
-                            {
-                                return null;
-                            }
-                        });
-                        ((Strategy) getDelegate()).are(ChangeType.MAJOR).when(new Closure(strategy)
-                        {
-                            @Override
-                            public Object call(Object... args)
-                            {
-                                return null;
-                            }
-                        });
-                        return null;
-                    }
-                }),
+                (Strategy strategy) -> strategy.follow(new LambdaClosure<>(strategy,
+                    (Procedure<Strategy>) s -> {
+                        s.are(ChangeType.MINOR).when(new LambdaClosure<>(strategy, any -> null));
+                        s.are(ChangeType.MAJOR).when(new LambdaClosure<>(strategy, any -> null));
+                    })),
                 soIt(has("ChangeTypeStrategies", (Strategy strategy) -> strategy.mChangeTypeStrategies, iterates(
                     anything(),
                     anything()

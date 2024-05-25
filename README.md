@@ -72,8 +72,18 @@ gver {
             branch not(matches(~/main/))
         }
     }
-    // releases can only be made on the main branch, on other branches the `gitRelease` task will fail
-    releaseBranchPattern ~/main$/ // defaults to ~/(main|master)$/
+    tag {
+        // releases can only be tagged on the main branch, on other branches the `gitTagRelease` task will fail
+        with release when {
+            branch matches(~/main|release.*/)
+        }
+        // pre-releases can only be tagged on feature and bugfix branches
+        with preRelease when {
+            branch matches(~/^(feature|bugfix).*/)
+        }
+        // other branches can't be tagged
+        with nothing otherwise
+    }
 }
 ```
 
@@ -89,7 +99,8 @@ When practising semantic versioning, the most important step is to understand th
 gver provides
 a DSL to describe how to derive the kind of change based on commit message or referenced issues.
 
-The top-level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix change.
+The top-level element is `changes` which takes a closure describing when a change is considered a major, minor or bugfix
+change.
 The list of conditions is evaluated top to bottom until the first one matches.
 
 ```groovy
@@ -129,7 +140,8 @@ gver {
 ```
 
 Note that all conditions inside a change type closure must match in order to apply the change type. If you need to
-express a logical `or`, describe the same change type with the other condition underneath the first one or use `anyOf` described below.
+express a logical `or`, describe the same change type with the other condition underneath the first one or use `anyOf`
+described below.
 
 The `otherwise` case should be last in the list as it catches all cases that didn't match any of the other conditions.
 The default is to
@@ -211,7 +223,8 @@ gver {
 
 This identifies major changes by the presence of the `#breaking` hashtag in the commit message.
 
-Another common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "resolved" followed by a `#` and
+Another common pattern is to consider a change a bugfix when it contains one of "fixes", "fixed", "resolves" or "
+resolved" followed by a `#` and
 a numeric issue identifier.
 
 ```groovy
@@ -251,7 +264,8 @@ gver {
 
 #### affects
 
-This condition allows you to determine a change type based on the files that have been affected by a commit. It takes a `Predicate` of a `Set<String>`
+This condition allows you to determine a change type based on the files that have been affected by a commit. It takes
+a `Predicate` of a `Set<String>`
 like `anyThat`, `noneThat` or `only`.
 
 Example:
@@ -342,7 +356,8 @@ gver {
 }
 ```
 
-In the closure passed to `use` you can use any groups declared in your regular expression. The resulting pre-release version will automatically
+In the closure passed to `use` you can use any groups declared in your regular expression. The resulting pre-release
+version will automatically
 be sanitized to comply with SemVer syntax.
 
 When your pre-release doesn't end with a numeric segment, the next pre-relase will automatically append `.1` and
@@ -418,26 +433,58 @@ gver {
 
 ### Tagging releases
 
-gver can tag your current Git head with the current version or the next release version.
+gver can tag your current Git head with the current pre-release or the next release version.
 
-The task `gitTag` creates a tag with the current pre-release version. The task `gitTagRelease` creates a tag with the next release version (unless
-the current commit already is a release version).
+By default, tags can only be created on `main` or `master` branches.
+Tagging can be configured with conditions like above. The following tag types are currently supported
 
-To prevent accidental release version tags on non-release branches, you can provide a pattern matching your release branch names.
+* `release`
+* `preRelease`
+* `none`
+
+With **none** causing any tag task to fail when the condition matches.
+
+Example:
 
 ```groovy
 gver {
     ...
-    releaseBranchPattern ~/(main|release\/.*)$/
+    tag {
+        with release when {
+            branch matches(~/^release\/.*/)
+        }
+        with preRelease when {
+            branch matches(~/^(feature|bugfix)\/.*/)
+        }
+        with none otherwise
+    }
 }
 ```
 
-This will cause the `gitTagRelease` task to fail on any branch not matching that pattern. The default
-is `~/(main|master)$/`
+*Note*: the `releaseBranchPattern` directive is deprecated and will be removed.
+
+The following tasks are available to tag the current Git head:
+
+#### `gitTagRelease`
+
+Adds a release version tag to the current Git head, if allowed by the `tag` configuration.
+
+#### `gitTagPreRelease`
+
+Adds a pre-release version tag to the current Git head, if allowed by the `tag` configuration.
+
+#### `gitTag`
+
+Adds a version tag to the current Git head. The release type is determined by the `tag` configuration. The first
+entry that matches the current head to be precise.
+
+⚠️ This behavior has changed since 0.35.0, when this always created a pre-release version tag. To create a pre-release
+version tag use `gitTagPreRelease` now.
 
 ## Issue trackers
 
-gver can determine the type of change by checking the issues referred to in the commit message. At present, it supports two issue trackers,
+gver can determine the type of change by checking the issues referred to in the commit message. At present, it supports
+two issue trackers,
 GitHub and Gitea.
 
 ### GitHub
@@ -506,7 +553,8 @@ gver {
 
 ## Dirty working trees
 
-At present a dirty working tree always results in a pre-release version. Depending on the last tag, either the pre-release or the minor version
+At present a dirty working tree always results in a pre-release version. Depending on the last tag, either the
+pre-release or the minor version
 is incremented. This prevents accidental release builds after a file has been changed.
 
 ## License

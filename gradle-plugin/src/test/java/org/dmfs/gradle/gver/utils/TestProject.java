@@ -2,6 +2,7 @@ package org.dmfs.gradle.gver.utils;
 
 import org.dmfs.gver.dsl.GitVersionConfig;
 import org.dmfs.gver.dsl.Strategy;
+import org.dmfs.gver.dsl.TagConfig;
 import org.dmfs.gver.git.Suffixes;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;

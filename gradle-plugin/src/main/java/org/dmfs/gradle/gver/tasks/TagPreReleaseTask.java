@@ -11,20 +11,20 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.io.IOException;
 
-import static org.dmfs.gver.dsl.ReleaseType.RELEASE;
+import static org.dmfs.gver.dsl.ReleaseType.PRERELEASE;
 
 
 /**
- * A Gradle {@link Task} that tags the current HEAD with a new release version.
+ * A Gradle {@link Task} that tags the current HEAD with a new pre-release version.
  * <p>
- * This task will throw an {@link IllegalStateException} when the current HEAD is not on a release branch.
+ * This task will throw an {@link IllegalStateException} when the current HEAD is not on a pre-release branch.
  */
-public class TagReleaseTask extends DefaultTask
+public class TagPreReleaseTask extends DefaultTask
 {
-    public TagReleaseTask()
+    public TagPreReleaseTask()
     {
         setGroup("gver");
-        setDescription("Tags the HEAD commit with a new release version.");
+        setDescription("Tags the HEAD commit with a new pre-release version.");
     }
 
     @TaskAction
@@ -34,7 +34,7 @@ public class TagReleaseTask extends DefaultTask
         {
             new CreateTag(
                 getLogger()::lifecycle,
-                RELEASE::equals,
+                PRERELEASE::equals,
                 (GitVersionConfig) getProject().getExtensions().getByName("gver"),
                 new StrictParser().parse(getProject().getVersion().toString()))
                 .process(repository);

@@ -1,5 +1,6 @@
 plugins {
     id 'groovy'
+    id 'java-library'
     id 'maven-publish'
 }
 
@@ -21,31 +22,31 @@ sourceSets {
 
 dependencies {
     compileOnly 'org.eclipse.jdt:org.eclipse.jdt.annotation:2.2.600'
-    compileOnly 'org.dmfs:srcless-annotations:0.3.0'
-    annotationProcessor 'org.dmfs:srcless-processors:0.3.0'
-    annotationProcessor 'org.dmfs:nullless-processors:0.3.0'
+    compileOnly 'org.dmfs:srcless-annotations:0.6.0'
+    annotationProcessor 'org.dmfs:srcless-processors:0.6.0'
+    annotationProcessor 'org.dmfs:nullless-processors:0.6.0'
 
     compileOnly 'org.codehaus.groovy:groovy-all:2.5.19'
-    implementation "org.dmfs:semver:0.2.0"
+    api "org.dmfs:semver:1.0.0"
     implementation "org.dmfs:rfc5545-datetime:0.3"
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r'
-    implementation 'org.dmfs:srcless-annotations:0.3.0'
-    implementation "org.dmfs:jems2:2.19.0"
+    implementation 'org.dmfs:srcless-annotations:0.6.0'
+    api 'org.dmfs:jems2:2.23.1'
 
-    testAnnotationProcessor 'org.dmfs:srcless-processors:0.3.0'
+    testAnnotationProcessor 'org.dmfs:srcless-processors:0.6.0'
 
     testImplementation 'org.codehaus.groovy:groovy-all:2.5.19'
-    testImplementation "org.dmfs:semver-confidence:0.2.0"
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
-    testImplementation "org.dmfs:jems2-testing:2.19.0"
-    testImplementation "org.dmfs:jems2-confidence:2.19.0"
+    testImplementation 'org.dmfs:semver-confidence:1.0.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0-M2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
+    testImplementation 'org.dmfs:jems2-testing:2.23.1'
+    testImplementation 'org.dmfs:jems2-confidence:2.23.1'
     testImplementation "org.hamcrest:hamcrest:2.2"
-    testImplementation "org.saynotobugs:confidence-core:0.28.0"
-    testImplementation "org.saynotobugs:confidence-incubator:0.28.0"
-    testImplementation "org.saynotobugs:confidence-test:0.28.0"
+    testImplementation "org.saynotobugs:confidence-core:0.45.1"
+    testImplementation "org.saynotobugs:confidence-incubator:0.45.1"
+    testImplementation "org.saynotobugs:confidence-test:0.45.1"
     testImplementation "com.google.guava:guava:31.1-jre"
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0-M2'
 }
 
 test {
