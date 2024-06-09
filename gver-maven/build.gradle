@@ -1,0 +1,33 @@
+plugins {
+    id 'groovy'
+    id 'de.benediktritter.maven-plugin-development' version '0.4.3'
+    id 'maven-publish'
+}
+
+apply from: '../jacoco.gradle'
+apply from: 'publish.gradle'
+
+sourceCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+}
+
+mavenPlugin {
+    goalPrefix = "gver"
+}
+
+dependencies {
+    implementation 'org.codehaus.groovy:groovy:2.5.19'
+    implementation project(":gver-dsl")
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r'
+    implementation 'org.apache.maven.plugin-tools:maven-plugin-annotations:3.12.0'
+    implementation 'org.apache.maven:maven-plugin-api:3.9.6'
+    implementation 'org.apache.maven:maven-core:3.9.6'
+    implementation 'org.apache.maven:maven-project:2.2.1'
+    implementation 'org.twdata.maven:mojo-executor:2.4.0'
+}
+
+test {
+    useJUnitPlatform()
+}

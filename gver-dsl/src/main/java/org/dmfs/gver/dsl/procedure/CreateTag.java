@@ -1,12 +1,7 @@
 package org.dmfs.gver.dsl.procedure;
 
-import org.dmfs.gver.dsl.ApplicableReleaseTypes;
-import org.dmfs.gver.dsl.GitVersionConfig;
 import org.dmfs.gver.dsl.Log;
-import org.dmfs.gver.dsl.ReleaseType;
 import org.dmfs.jems2.FragileProcedure;
-import org.dmfs.jems2.Optional;
-import org.dmfs.jems2.Predicate;
 import org.dmfs.jems2.iterable.Mapped;
 import org.dmfs.jems2.optional.First;
 import org.dmfs.semver.Version;
@@ -24,15 +19,11 @@ import static org.eclipse.jgit.lib.Constants.R_TAGS;
 public final class CreateTag implements FragileProcedure<Repository, IOException>
 {
     private final Log mLog;
-    private final Predicate<ReleaseType> mReleaseType;
-    private final GitVersionConfig mGitVersionConfig;
     private final Version mVersion;
 
-    public CreateTag(Log logger, Predicate<ReleaseType> releaseType, GitVersionConfig gitVersionConfig, Version version)
+    public CreateTag(Log logger, Version version)
     {
         mLog = logger;
-        mReleaseType = releaseType;
-        mGitVersionConfig = gitVersionConfig;
         mVersion = version;
     }
 
@@ -53,34 +44,20 @@ public final class CreateTag implements FragileProcedure<Repository, IOException
             ObjectId headId = repository.resolve("HEAD");
             RevCommit head = repository.parseCommit(headId);
 
-            Optional<String> versionString =
-                new org.dmfs.jems2.optional.Mapped<>(
-                    Object::toString,
-                    new org.dmfs.jems2.optional.Mapped<>(
-                        VersionSequence::new,
-                        new org.dmfs.jems2.optional.Mapped<>(
-                            releaseType -> releaseType.value(mVersion),
-                            new First<>(
-                                mReleaseType,
-                                new ApplicableReleaseTypes(mGitVersionConfig, repository, head, repository.getBranch())))));
+            String versionString = new VersionSequence(mVersion).toString();
 
-            if (!versionString.isPresent())
-            {
-                throw new IllegalStateException("No release type found that's applicable to the current head");
-            }
-
-            if (!new First<>(versionString.value()::equals,
+            if (!new First<>(versionString::equals,
                 new Mapped<>(tag -> tag.getName().startsWith(R_TAGS) ? tag.getName().substring(R_TAGS.length()) : tag.getName(),
                     git.tagList().call())).isPresent())
             {
                 git.tag()
                     .setObjectId(head)
-                    .setName(versionString.value())
+                    .setName(versionString)
                     .call();
             }
             else
             {
-                mLog.log("Tag {} already exists. Not adding tag.", versionString.value());
+                mLog.log("Tag {} already exists. Not adding tag.", versionString);
             }
         }
         catch (GitAPIException apiException)

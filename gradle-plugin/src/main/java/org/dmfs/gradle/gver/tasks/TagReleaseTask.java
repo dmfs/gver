@@ -2,8 +2,11 @@ package org.dmfs.gradle.gver.tasks;
 
 import org.dmfs.gradle.gver.utils.ProjectRepositoryFunction;
 import org.dmfs.gver.dsl.GitVersionConfig;
+import org.dmfs.gver.dsl.function.EffectiveVersion;
 import org.dmfs.gver.dsl.procedure.CreateTag;
+import org.dmfs.jems2.Optional;
 import org.dmfs.semver.StrictParser;
+import org.dmfs.semver.Version;
 import org.eclipse.jgit.lib.Repository;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
@@ -32,11 +35,15 @@ public class TagReleaseTask extends DefaultTask
     {
         try (Repository repository = ProjectRepositoryFunction.INSTANCE.value(getProject()))
         {
-            new CreateTag(
-                getLogger()::lifecycle,
-                RELEASE::equals,
-                (GitVersionConfig) getProject().getExtensions().getByName("gver"),
-                new StrictParser().parse(getProject().getVersion().toString()))
+            Optional<Version> version =
+                new EffectiveVersion(RELEASE::equals,
+                    (GitVersionConfig) getProject().getExtensions().getByName("gver"),
+                    new StrictParser().parse(getProject().getVersion().toString())).value(repository);
+            if (!version.isPresent())
+            {
+                throw new IllegalStateException("Current head is not allowed to be tagged with a release version.");
+            }
+            new CreateTag(getLogger()::lifecycle, version.value())
                 .process(repository);
         }
     }
