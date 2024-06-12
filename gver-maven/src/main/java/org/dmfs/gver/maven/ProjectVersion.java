@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * The version of the current Git hosted Maven project.
@@ -46,9 +47,13 @@ public final class ProjectVersion implements FragileFunction<Function<Version, V
             return mVersion;
         }
 
-        Object pluginConfig = mProject.getBuildPlugins()
-            .stream()
-            .filter(plugin -> "gver-maven".equals(plugin.getArtifactId()))
+        Object pluginConfig = Stream.concat(
+                mProject.getBuildPlugins()
+                    .stream()
+                    .filter(plugin -> "gver-maven".equals(plugin.getArtifactId())),
+                mProject.getPluginManagement().getPlugins()
+                    .stream()
+                    .filter(plugin -> "gver-maven".equals(plugin.getArtifactId())))
             .findFirst()
             .map(Plugin::getConfiguration)
             .map(c -> extractNestedString("config", (Xpp3Dom) c))
