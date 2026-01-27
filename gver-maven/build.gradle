@@ -18,9 +18,9 @@ mavenPlugin {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy:2.5.19'
+    implementation 'org.apache.groovy:groovy:4.0.30'
     implementation project(":gver-dsl")
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.7.0.202309050840-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:7.2.1.202505142326-r'
     implementation 'org.apache.maven.plugin-tools:maven-plugin-annotations:3.12.0'
     implementation 'org.apache.maven:maven-plugin-api:3.9.6'
     implementation 'org.apache.maven:maven-core:3.9.6'
