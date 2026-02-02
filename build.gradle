@@ -43,6 +43,8 @@ if (project.hasProperty('SONATYPE_USERNAME') && project.hasProperty('SONATYPE_PA
     nexusPublishing {
         repositories {
             sonatype {
+                nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+                snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
                 username = SONATYPE_USERNAME
                 password = SONATYPE_PASSWORD
             }
